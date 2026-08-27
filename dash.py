@@ -18,10 +18,9 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "OVERVIEW"
 
-# Custom CSS: Soft Theme & Muted Filter Tags
+# Custom CSS
 st.markdown("""
 <style>
-    /* 1. Base App & Sidebar Background */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #fafbfc !important;
     }
@@ -48,22 +47,20 @@ st.markdown("""
         gap: 0.35rem !important;
     }
 
-    /* 2. Global Text: Deep Slate */
     html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong, div {
         color: #1e293b !important;
     }
 
-    /* 3. Label Filter & Widget */
     [data-testid="stWidgetLabel"] label, 
     [data-testid="stWidgetLabel"] p,
     .stSelectbox label, 
-    .stMultiSelect label {
+    .stMultiSelect label,
+    .stRadio label {
         color: #334155 !important;
         font-weight: 700 !important;
         font-size: 0.85rem !important;
     }
 
-    /* 4. Selectbox & Multiselect Input Box */
     div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
     div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
     div[data-baseweb="select"] > div,
@@ -74,28 +71,34 @@ st.markdown("""
         color: #1e293b !important;
     }
 
-    /* 5. Tag/Chip Multiselect: Soft Muted Palette */
-    div[data-baseweb="select"] span[data-baseweb="tag"],
+    .stMultiSelect [data-baseweb="tag"],
+    [data-testid="stMultiSelect"] [data-baseweb="tag"],
+    [data-baseweb="select"] [data-baseweb="tag"],
+    [data-baseweb="tag"],
     span[data-baseweb="tag"],
     div[data-baseweb="tag"] {
         background-color: #f1f5f9 !important;
+        background: #f1f5f9 !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
     }
-    div[data-baseweb="select"] span[data-baseweb="tag"] span,
-    span[data-baseweb="tag"] span,
-    div[data-baseweb="tag"] span {
+
+    .stMultiSelect [data-baseweb="tag"] span,
+    [data-testid="stMultiSelect"] [data-baseweb="tag"] span,
+    [data-baseweb="tag"] span,
+    [data-baseweb="tag"] div {
         color: #1e293b !important;
         font-weight: 600 !important;
     }
-    div[data-baseweb="select"] span[data-baseweb="tag"] svg,
-    span[data-baseweb="tag"] svg,
-    div[data-baseweb="tag"] svg {
+
+    .stMultiSelect [data-baseweb="tag"] svg,
+    [data-testid="stMultiSelect"] [data-baseweb="tag"] svg,
+    [data-baseweb="tag"] svg,
+    [data-baseweb="tag"] path {
         fill: #64748b !important;
         color: #64748b !important;
     }
 
-    /* 6. Soft / Pastel Metric Pill Cards */
     .metric-pill-card {
         border-radius: 20px !important;
         padding: 20px 22px;
@@ -170,7 +173,6 @@ st.markdown("""
         letter-spacing: 0.03em;
     }
 
-    /* 7. Soft Alert Card */
     .alert-peak-card {
         background: #fff7ed;
         border-left: 5px solid #f97316;
@@ -183,7 +185,6 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(249, 115, 22, 0.04);
     }
 
-    /* 8. Tabs Styling */
     button[data-baseweb="tab"] {
         color: #64748b !important;
         font-weight: 700 !important;
@@ -193,7 +194,6 @@ st.markdown("""
         border-bottom: 3px solid #0284c7 !important;
     }
 
-    /* 9. Dataframe Container */
     [data-testid="stDataFrame"] {
         background-color: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
@@ -202,7 +202,6 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
 
-    /* 10. Sidebar Buttons */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
@@ -511,8 +510,23 @@ if st.session_state.active_page == "OVERVIEW":
                 st.plotly_chart(fig_domains, use_container_width=True)
 
     with tab3:
-        st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Detail Feed Berita & Ringkasan Gemini AI</p>", unsafe_allow_html=True)
-        cols = [c for c in ["news_date", "domain", "new_tier", "issue_topic", "sentiment", "gemini_summary", "news_url"] if c in df_filtered.columns]
+        st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Detail Feed Berita & Ringkasan Gemini AI</p>", unsafe_allow_html=True)
+        
+        # --- FILTER SENTIMEN KHUSUS TABEL TAB 3 ---
+        col_t_title, col_t_filter = st.columns([2, 1.2])
+        with col_t_filter:
+            tbl_sent_choice = st.selectbox(
+                "Filter Sentimen Berita:",
+                options=["Semua Sentimen", "Positive", "Neutral", "Negative"],
+                index=0,
+                key="tbl_sent_ov"
+            )
+        
+        df_table_ov = df_filtered.copy()
+        if tbl_sent_choice != "Semua Sentimen" and "sentiment" in df_table_ov.columns:
+            df_table_ov = df_table_ov[df_table_ov["sentiment"] == tbl_sent_choice]
+            
+        cols = [c for c in ["news_date", "domain", "new_tier", "issue_topic", "sentiment", "gemini_summary", "news_url"] if c in df_table_ov.columns]
         col_config = {
             "gemini_summary": st.column_config.TextColumn("Ringkasan Berita (Gemini Summary)", width="large"),
             "news_url": st.column_config.LinkColumn("Tautan Berita", display_text="Buka Link 🔗"),
@@ -522,7 +536,7 @@ if st.session_state.active_page == "OVERVIEW":
             "issue_topic": st.column_config.TextColumn("Issue Topic"),
             "new_tier": st.column_config.TextColumn("Tier")
         }
-        st.dataframe(df_filtered[cols], column_config=col_config, hide_index=True, use_container_width=True, height=450)
+        st.dataframe(df_table_ov[cols], column_config=col_config, hide_index=True, use_container_width=True, height=450)
 
 
 # ==========================================
@@ -612,6 +626,7 @@ elif st.session_state.active_page == "PEAK_ALERT":
         st.plotly_chart(fig_trend, use_container_width=True)
 
         st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-top:14px; margin-bottom:6px; color:#1e293b;'>Daftar Berita Pemicu pada Tanggal Puncak ({peak_data['peak_date']})</p>", unsafe_allow_html=True)
+        
         cols_peak = [c for c in ["domain", "new_tier", "issue_topic", "gemini_summary", "news_url"] if c in peak_data["peak_articles"].columns]
         col_cfg_peak = {
             "gemini_summary": st.column_config.TextColumn("Ringkasan Isu Berita (Gemini Summary)", width="large"),
@@ -712,15 +727,30 @@ elif st.session_state.active_page == "DEEP_DIVE":
                 fig_deep_tier.update_layout(xaxis_title="Tier Media", yaxis_title="Jumlah")
                 st.plotly_chart(fig_deep_tier, use_container_width=True)
 
-        st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'</p>", unsafe_allow_html=True)
-        cols_deep = [c for c in ["news_date", "domain", "new_tier", "sentiment", "gemini_summary", "news_url"] if c in df_deep.columns]
+        st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'</p>", unsafe_allow_html=True)
+        
+        # --- FILTER SENTIMEN KHUSUS TABEL DEEP DIVE ---
+        col_dt_title, col_dt_filter = st.columns([2, 1.2])
+        with col_dt_filter:
+            tbl_sent_choice_deep = st.selectbox(
+                "Filter Sentimen Berita Topik Ini:",
+                options=["Semua Sentimen", "Positive", "Neutral", "Negative"],
+                index=0,
+                key="tbl_sent_deep"
+            )
+        
+        df_table_deep = df_deep.copy()
+        if tbl_sent_choice_deep != "Semua Sentimen" and "sentiment" in df_table_deep.columns:
+            df_table_deep = df_table_deep[df_table_deep["sentiment"] == tbl_sent_choice_deep]
+
+        cols_deep = [c for c in ["news_date", "domain", "new_tier", "sentiment", "gemini_summary", "news_url"] if c in df_table_deep.columns]
         col_cfg_deep = {
             "gemini_summary": st.column_config.TextColumn("Ringkasan Berita (Gemini Summary)", width="large"),
             "news_url": st.column_config.LinkColumn("Link Berita", display_text="Buka Link 🔗"),
             "domain": st.column_config.TextColumn("Media Domain"),
             "news_date": st.column_config.DateColumn("Tanggal", format="YYYY-MM-DD")
         }
-        st.dataframe(df_deep[cols_deep], column_config=col_cfg_deep, hide_index=True, use_container_width=True, height=380)
+        st.dataframe(df_table_deep[cols_deep], column_config=col_cfg_deep, hide_index=True, use_container_width=True, height=380)
 
     else:
         st.warning("Kolom `issue_topic` tidak ditemukan pada dataset.")
