@@ -847,4 +847,4 @@ elif st.session_state.active_page == "DEEP_DIVE":
 # 7. FOOTER
 # ==========================================
 st.markdown("---")
-st.markdown("<center style='color:#94a3b8; font-size:0.8rem; font-weight:600;'>© Copyright PT Pertamina (Persero) 2026. All Rights Reserved</center>", unsafe_allow_html=True)
+st.markdown("<center style='color:#94a3b8; font-size:0.8rem; font-weight:600;'>TKB News Sentiment Analysis Dashboard © 2026</center>", unsafe_allow_html=True)
