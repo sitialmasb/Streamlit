@@ -173,25 +173,40 @@ def standardize_sentiment_en(val):
 
 @st.cache_data
 def load_local_dataset():
+    # Dapatkan direktori absolut dari file script yang sedang berjalan
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Daftar nama file yang dicari di folder
     candidate_files = [
-        "data.xlsx", "data.csv",
-        "dataset_sentiment.xlsx", "dataset_sentiment.csv",
-        "dataset.xlsx", "dataset.csv",
-        "sentiment.xlsx", "sentiment.csv"
+        "dataset.csv", "dataset.xlsx",
+        "data.csv", "data.xlsx",
+        "dataset_sentiment.csv", "dataset_sentiment.xlsx",
+        "sentiment.csv", "sentiment.xlsx"
     ]
+    
     file_found = None
     for f in candidate_files:
-        if os.path.exists(f):
+        full_path = os.path.join(current_dir, f)
+        if os.path.exists(full_path):
+            file_found = full_path
+            break
+        # Fallback pencarian direktori relatif
+        elif os.path.exists(f):
             file_found = f
             break
             
     if file_found:
         try:
             if file_found.endswith('.csv'):
-                df = pd.read_csv(file_found)
+                # Handle separator koma atau titik koma otomatis
+                try:
+                    df = pd.read_csv(file_found)
+                except Exception:
+                    df = pd.read_csv(file_found, sep=';')
             else:
                 df = pd.read_excel(file_found)
             
+            # Bersihkan nama kolom menjadi lowercase
             df.columns = [str(c).strip().lower() for c in df.columns]
             
             if "sentiment" in df.columns:
@@ -200,11 +215,11 @@ def load_local_dataset():
             if "news_date" in df.columns:
                 df["news_date"] = pd.to_datetime(df["news_date"], errors="coerce")
                 
-            return df, file_found
+            return df, os.path.basename(file_found)
         except Exception as e:
             st.error(f"Gagal membaca file {file_found}: {e}")
             
-    # Dummy fallback
+    # Dummy fallback jika file benar-benar tidak ditemukan
     np.random.seed(42)
     topics = ["integrity", "loyalty", "quality", "services_facility", "other"]
     domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com", "cnbcindonesia.com"]
