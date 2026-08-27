@@ -1,0 +1,417 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import os
+
+# ==========================================
+# 1. KONFIGURASI HALAMAN & TEMA PUTIH
+# ==========================================
+st.set_page_config(
+    page_title="Pertamina Trust Radar",
+    page_icon="📡",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+if "active_page" not in st.session_state:
+    st.session_state.active_page = "MONITORING"
+
+# Custom CSS: Latar putih permanen, teks gelap kontras, & gap sidebar rapat
+st.markdown("""
+<style>
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"] {
+        background-color: #ffffff !important;
+    }
+    [data-testid="stSidebar"] {
+        background-color: #f8fafc !important;
+        border-right: 1px solid #e2e8f0;
+    }
+    
+    section[data-testid="stSidebar"] .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1rem !important;
+    }
+    section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {
+        gap: 0.35rem !important;
+    }
+
+    html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong {
+        color: #0f172a !important;
+    }
+    [data-testid="stWidgetLabel"] label, [data-testid="stWidgetLabel"] p,
+    .stSelectbox label, .stMultiSelect label, .stRadio label, .stDateInput label {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+    div[data-baseweb="select"] *, div[data-baseweb="popover"] * {
+        color: #0f172a !important;
+        background-color: #ffffff !important;
+    }
+    span[data-baseweb="tag"] {
+        background-color: #e2e8f0 !important;
+    }
+    span[data-baseweb="tag"] span {
+        color: #0f172a !important;
+    }
+    button[data-baseweb="tab"] {
+        color: #475569 !important;
+        font-weight: 600 !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #2563eb !important;
+        border-bottom: 2px solid #2563eb !important;
+    }
+    .metric-card {
+        border-radius: 14px;
+        padding: 16px 20px;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 10px;
+    }
+    .metric-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .metric-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a !important;
+        margin: 4px 0;
+    }
+    .metric-sub {
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    section[data-testid="stSidebar"] div.stButton > button {
+        width: 100%;
+        text-align: left;
+        justify-content: flex-start;
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 2px;
+        font-weight: 600;
+        font-size: 0.82rem;
+        border: 1px solid transparent;
+        background-color: transparent !important;
+        color: #475569 !important;
+    }
+    section[data-testid="stSidebar"] div.stButton > button:hover {
+        background-color: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+    section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {
+        background-color: #eff6ff !important;
+        color: #2563eb !important;
+        border-color: #bfdbfe !important;
+        font-weight: 700 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+# ==========================================
+# 2. STANDARISASI SENTIMEN & LOAD DATASET
+# ==========================================
+def standardize_sentiment_en(val):
+    if pd.isna(val):
+        return val
+    s = str(val).strip().lower()
+    if "pos" in s:
+        return "Positive"
+    elif "neg" in s:
+        return "Negative"
+    elif "neu" in s or "net" in s:
+        return "Neutral"
+    return str(val).strip().capitalize()
+
+@st.cache_data
+def load_local_dataset():
+    candidate_files = [
+        "data.xlsx", "data.csv",
+        "dataset_sentiment.xlsx", "dataset_sentiment.csv",
+        "dataset.xlsx", "dataset.csv",
+        "sentiment.xlsx", "sentiment.csv"
+    ]
+    file_found = None
+    for f in candidate_files:
+        if os.path.exists(f):
+            file_found = f
+            break
+            
+    if file_found:
+        try:
+            if file_found.endswith('.csv'):
+                df = pd.read_csv(file_found)
+            else:
+                df = pd.read_excel(file_found)
+            
+            df.columns = [str(c).strip().lower() for c in df.columns]
+            
+            if "sentiment" in df.columns:
+                df["sentiment"] = df["sentiment"].apply(standardize_sentiment_en)
+            
+            if "news_date" in df.columns:
+                df["news_date"] = pd.to_datetime(df["news_date"], errors="coerce")
+                
+            return df, file_found
+        except Exception as e:
+            st.error(f"Gagal membaca file {file_found}: {e}")
+            
+    # Dummy fallback data
+    np.random.seed(42)
+    topics = ["Distribusi BBM & LPG", "Transisi Energi & ESG", "Operasional Kilang", "Kinerja Finansial & Investasi", "Layanan Konsumen & SPBU"]
+    domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com", "cnbcindonesia.com", "tribunnews.com"]
+    dates = pd.date_range(end="2026-08-25", periods=60, freq="D")
+    
+    sample_data = pd.DataFrame({
+        "news_url": [f"https://{np.random.choice(domains)}/read/{1000+i}" for i in range(60)],
+        "sentiment": np.random.choice(["Positive", "Neutral", "Negative"], size=60, p=[0.45, 0.35, 0.2]),
+        "news_date": np.random.choice(dates, size=60),
+        "issue_topic": np.random.choice(topics, size=60),
+        "domain": np.random.choice(domains, size=60),
+        "new_tier": np.random.choice(["Tier 1", "Tier 2", "Tier 3"], size=60, p=[0.5, 0.3, 0.2]),
+        "gemini_summary": [
+            "Ringkasan AI: Pertamina memastikan ketersediaan pasokan energi aman dan stabil di seluruh regional.",
+            "Ringkasan AI: Evaluasi harga BBM serta penguatan infrastruktur digital guna efisiensi distribusi.",
+            "Ringkasan AI: Proyek transisi energi bersih dan dekarbonisasi terus dipercepat untuk mencapai target net zero emission.",
+            "Ringkasan AI: Pemeliharaan berkala sarana dan fasilitas kilang dalam rangka peningkatan standar keselamatan kerja."
+        ] * 15
+    })
+    return sample_data, None
+
+df_raw, loaded_file_name = load_local_dataset()
+
+color_map_sentiment = {
+    'Positive': '#10b981',
+    'Neutral': '#f59e0b',
+    'Negative': '#ef4444'
+}
+
+
+# ==========================================
+# 3. SIDEBAR: COMPACT MENU & FILTERS (NO LOGO)
+# ==========================================
+with st.sidebar:
+    st.markdown("<p style='font-size: 0.85rem; font-weight: 700; margin-bottom: 4px;'>MENU DASHBOARD</p>", unsafe_allow_html=True)
+    
+    btn_mon = st.button(
+        "📊 SENTIMENT & ISSUE TOPIC MONITORING",
+        key="nav_mon",
+        type="primary" if st.session_state.active_page == "MONITORING" else "secondary",
+        use_container_width=True
+    )
+    if btn_mon:
+        st.session_state.active_page = "MONITORING"
+        st.rerun()
+
+    btn_deep = st.button(
+        "🔍 TOPIC DEEP DIVE",
+        key="nav_deep",
+        type="primary" if st.session_state.active_page == "DEEP_DIVE" else "secondary",
+        use_container_width=True
+    )
+    if btn_deep:
+        st.session_state.active_page = "DEEP_DIVE"
+        st.rerun()
+
+    if loaded_file_name:
+        st.success(f" Terhubung: `{loaded_file_name}`")
+    else:
+        st.info("💡 Memakai data sampel bawaan.")
+
+    st.markdown("<p style='font-size: 0.85rem; font-weight: 700; margin-top: 10px; margin-bottom: 2px;'>🎯 FILTER DATA</p>", unsafe_allow_html=True)
+
+    sent_list = sorted(list(df_raw["sentiment"].dropna().unique())) if "sentiment" in df_raw.columns else []
+    selected_sent = st.multiselect("Sentiment", options=sent_list, default=sent_list)
+
+    tier_list = sorted(list(df_raw["new_tier"].dropna().astype(str).unique())) if "new_tier" in df_raw.columns else []
+    selected_tier = st.multiselect("Tier Media", options=tier_list, default=tier_list)
+
+    domain_list = sorted(list(df_raw["domain"].dropna().astype(str).unique())) if "domain" in df_raw.columns else []
+    selected_domain = st.multiselect("Media Domain", options=domain_list, default=[])
+
+    topic_list = sorted(list(df_raw["issue_topic"].dropna().astype(str).unique())) if "issue_topic" in df_raw.columns else []
+    if st.session_state.active_page == "MONITORING":
+        selected_topic = st.multiselect("Issue Topic", options=topic_list, default=topic_list)
+    else:
+        selected_topic = topic_list
+
+
+# Terapkan Filter
+df_filtered = df_raw.copy()
+if selected_sent and "sentiment" in df_filtered.columns:
+    df_filtered = df_filtered[df_filtered["sentiment"].isin(selected_sent)]
+if selected_tier and "new_tier" in df_filtered.columns:
+    df_filtered = df_filtered[df_filtered["new_tier"].astype(str).isin(selected_tier)]
+if selected_domain and "domain" in df_filtered.columns:
+    df_filtered = df_filtered[df_filtered["domain"].astype(str).isin(selected_domain)]
+if st.session_state.active_page == "MONITORING" and selected_topic and "issue_topic" in df_filtered.columns:
+    df_filtered = df_filtered[df_filtered["issue_topic"].astype(str).isin(selected_topic)]
+
+
+# ==========================================
+# 4. HALAMAN 1: MONITORING
+# ==========================================
+if st.session_state.active_page == "MONITORING":
+    st.markdown("""
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div style="background: #dc2626; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem;">📡</div>
+            <div>
+                <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a;">PERTAMINA <span style="color:#2563eb; font-style: italic;">TRUSTRADAR</span></h2>
+                <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #64748b; font-weight: 600;">SENTIMENT & ISSUE TOPIC MONITORING</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    total_news = len(df_filtered)
+    pos_count = len(df_filtered[df_filtered["sentiment"] == "Positive"]) if "sentiment" in df_filtered.columns else 0
+    neu_count = len(df_filtered[df_filtered["sentiment"] == "Neutral"]) if "sentiment" in df_filtered.columns else 0
+    neg_count = len(df_filtered[df_filtered["sentiment"] == "Negative"]) if "sentiment" in df_filtered.columns else 0
+    top_topic = df_filtered["issue_topic"].mode()[0] if not df_filtered.empty and "issue_topic" in df_filtered.columns else "-"
+
+    k1, k2, k3, k4, k5 = st.columns(5)
+    with k1:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Total News</div><div class="metric-value">{total_news}</div><div class="metric-sub" style="color:#2563eb;">Berita Terdata</div></div>', unsafe_allow_html=True)
+    with k2:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Positive</div><div class="metric-value" style="color:#10b981;">{pos_count}</div><div class="metric-sub" style="color:#10b981;">{(pos_count/total_news*100) if total_news else 0:.1f}%</div></div>', unsafe_allow_html=True)
+    with k3:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#f59e0b;">{neu_count}</div><div class="metric-sub" style="color:#f59e0b;">{(neu_count/total_news*100) if total_news else 0:.1f}%</div></div>', unsafe_allow_html=True)
+    with k4:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#ef4444;">{neg_count}</div><div class="metric-sub" style="color:#ef4444;">Perlu Tindakan</div></div>', unsafe_allow_html=True)
+    with k5:
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Top Topic</div><div class="metric-value" style="color:#8b5cf6; font-size:1.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{top_topic}">{top_topic}</div><div class="metric-sub" style="color:#8b5cf6;">Volume Terbesar</div></div>', unsafe_allow_html=True)
+
+    st.write("")
+
+    tab1, tab2, tab3 = st.tabs(["📈 Distribusi Sentiment & Media", "📌 Sebaran Issue Topic", "📰 Gemini AI News Feed"])
+    with tab1:
+        c1, c2 = st.columns([1, 1.2])
+        with c1:
+            st.subheader("Porsi Sentiment")
+            if not df_filtered.empty and "sentiment" in df_filtered.columns:
+                fig_pie = px.pie(df_filtered, names='sentiment', hole=0.55, color='sentiment', color_discrete_map=color_map_sentiment)
+                fig_pie.update_traces(textinfo='percent+value')
+                fig_pie.update_layout(height=340, margin=dict(l=10, r=10, t=20, b=10))
+                st.plotly_chart(fig_pie, use_container_width=True)
+        with c2:
+            st.subheader("Sentiment Berdasarkan Tier Media")
+            if not df_filtered.empty and "new_tier" in df_filtered.columns and "sentiment" in df_filtered.columns:
+                df_tier_sent = df_filtered.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
+                fig_tier = px.bar(df_tier_sent, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='group', text='count')
+                fig_tier.update_layout(height=340, margin=dict(l=10, r=10, t=20, b=10), xaxis_title="Tier Media", yaxis_title="Jumlah Berita")
+                st.plotly_chart(fig_tier, use_container_width=True)
+
+    with tab2:
+        c_top1, c_top2 = st.columns([1.2, 1])
+        with c_top1:
+            st.subheader("Komposisi Sentiment per Issue Topic")
+            if not df_filtered.empty and "issue_topic" in df_filtered.columns and "sentiment" in df_filtered.columns:
+                df_top_sent = df_filtered.groupby(['issue_topic', 'sentiment']).size().reset_index(name='count')
+                fig_top = px.bar(df_top_sent, y='issue_topic', x='count', color='sentiment', color_discrete_map=color_map_sentiment, orientation='h', barmode='stack')
+                fig_top.update_layout(height=350, yaxis_title="", xaxis_title="Jumlah Berita")
+                st.plotly_chart(fig_top, use_container_width=True)
+        with c_top2:
+            st.subheader("Top Domain Media (Volume Terbanyak)")
+            if not df_filtered.empty and "domain" in df_filtered.columns:
+                top_domains = df_filtered['domain'].value_counts().head(8).reset_index()
+                top_domains.columns = ['Domain', 'Count']
+                fig_domains = px.bar(top_domains, x='Count', y='Domain', orientation='h', color_discrete_sequence=['#2563eb'], text='Count')
+                fig_domains.update_layout(height=350, yaxis=dict(autorange="reversed"), yaxis_title="", xaxis_title="Total Berita")
+                st.plotly_chart(fig_domains, use_container_width=True)
+
+    with tab3:
+        st.subheader("Detail Feed Berita & Ringkasan Gemini AI")
+        cols = [c for c in ["news_date", "domain", "new_tier", "issue_topic", "sentiment", "gemini_summary", "news_url"] if c in df_filtered.columns]
+        
+        col_config = {
+            "gemini_summary": st.column_config.TextColumn("Ringkasan Berita (Gemini Summary)", width="large"),
+            "news_url": st.column_config.LinkColumn("Tautan Berita", display_text="Buka Link 🔗"),
+            "domain": st.column_config.TextColumn("Media Domain"),
+            "news_date": st.column_config.DateColumn("Tanggal", format="YYYY-MM-DD"),
+            "sentiment": st.column_config.TextColumn("Sentiment"),
+            "issue_topic": st.column_config.TextColumn("Issue Topic"),
+            "new_tier": st.column_config.TextColumn("Tier")
+        }
+        st.dataframe(df_filtered[cols], column_config=col_config, hide_index=True, use_container_width=True, height=450)
+
+
+# ==========================================
+# 5. HALAMAN 2: TOPIC DEEP DIVE
+# ==========================================
+elif st.session_state.active_page == "DEEP_DIVE":
+    st.markdown("""
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div style="background: #2563eb; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem;">🔍</div>
+            <div>
+                <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a;">TOPIC <span style="color:#2563eb; font-style: italic;">DEEP DIVE</span></h2>
+                <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #64748b; font-weight: 600;">IN-DEPTH SINGLE TOPIC INVESTIGATION & ANALYSIS</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    available_topics = sorted(list(df_raw["issue_topic"].dropna().astype(str).unique())) if "issue_topic" in df_raw.columns else []
+    
+    if available_topics:
+        selected_single_topic = st.selectbox("📌 Pilih Topik yang Ingin Dianalisis Secara Mendalam:", options=available_topics)
+        
+        df_deep = df_filtered[df_filtered["issue_topic"] == selected_single_topic]
+        
+        deep_total = len(df_deep)
+        deep_pos = len(df_deep[df_deep["sentiment"] == "Positive"]) if "sentiment" in df_deep.columns else 0
+        deep_neu = len(df_deep[df_deep["sentiment"] == "Neutral"]) if "sentiment" in df_deep.columns else 0
+        deep_neg = len(df_deep[df_deep["sentiment"] == "Negative"]) if "sentiment" in df_deep.columns else 0
+
+        d1, d2, d3, d4 = st.columns(4)
+        with d1:
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Volume Berita Isu</div><div class="metric-value">{deep_total}</div><div class="metric-sub" style="color:#2563eb;">Total Artikel</div></div>', unsafe_allow_html=True)
+        with d2:
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Positive</div><div class="metric-value" style="color:#10b981;">{deep_pos}</div><div class="metric-sub" style="color:#10b981;">{(deep_pos/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
+        with d3:
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#f59e0b;">{deep_neu}</div><div class="metric-sub" style="color:#f59e0b;">{(deep_neu/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
+        with d4:
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#ef4444;">{deep_neg}</div><div class="metric-sub" style="color:#ef4444;">{(deep_neg/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
+
+        st.write("")
+
+        col_g1, col_g2 = st.columns([1, 1])
+        with col_g1:
+            st.subheader(f"Proporsi Sentiment: {selected_single_topic}")
+            if not df_deep.empty and "sentiment" in df_deep.columns:
+                fig_deep_pie = px.pie(df_deep, names='sentiment', hole=0.5, color='sentiment', color_discrete_map=color_map_sentiment)
+                fig_deep_pie.update_traces(textinfo='percent+value')
+                fig_deep_pie.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=10))
+                st.plotly_chart(fig_deep_pie, use_container_width=True)
+        with col_g2:
+            st.subheader(f"Sebaran Media Tier: {selected_single_topic}")
+            if not df_deep.empty and "new_tier" in df_deep.columns and "sentiment" in df_deep.columns:
+                df_deep_tier = df_deep.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
+                fig_deep_tier = px.bar(df_deep_tier, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='stack', text='count')
+                fig_deep_tier.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=10), xaxis_title="Tier Media", yaxis_title="Jumlah")
+                st.plotly_chart(fig_deep_tier, use_container_width=True)
+
+        st.subheader(f"Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'")
+        cols_deep = [c for c in ["news_date", "domain", "new_tier", "sentiment", "gemini_summary", "news_url"] if c in df_deep.columns]
+        col_cfg_deep = {
+            "gemini_summary": st.column_config.TextColumn("Ringkasan Berita (Gemini Summary)", width="large"),
+            "news_url": st.column_config.LinkColumn("Link Berita", display_text="Buka Link 🔗"),
+            "domain": st.column_config.TextColumn("Media Domain"),
+            "news_date": st.column_config.DateColumn("Tanggal", format="YYYY-MM-DD")
+        }
+        st.dataframe(df_deep[cols_deep], column_config=col_cfg_deep, hide_index=True, use_container_width=True, height=380)
+
+    else:
+        st.warning("Kolom `issue_topic` tidak ditemukan pada dataset.")
+
+# ==========================================
+# 6. FOOTER
+# ==========================================
+st.markdown("---")
+st.markdown("<center style='color:#94a3b8; font-size:0.8rem;'>© Copyright PT Pertamina (Persero) 2026. All Rights Reserved</center>", unsafe_allow_html=True)
