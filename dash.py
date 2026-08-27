@@ -18,9 +18,13 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "OVERVIEW"
 
+if "overview_subtab" not in st.session_state:
+    st.session_state.overview_subtab = "DISTRIBUSI"
+
 # Custom CSS
 st.markdown("""
 <style>
+    /* 1. Base App & Sidebar Background */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #fafbfc !important;
     }
@@ -61,6 +65,7 @@ st.markdown("""
         font-size: 0.85rem !important;
     }
 
+    /* 2. Selectbox & Multiselect Input Box */
     div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
     div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
     div[data-baseweb="select"] > div,
@@ -99,6 +104,7 @@ st.markdown("""
         color: #64748b !important;
     }
 
+    /* 3. Metric Pill Cards */
     .metric-pill-card {
         border-radius: 20px !important;
         padding: 20px 22px;
@@ -173,6 +179,7 @@ st.markdown("""
         letter-spacing: 0.03em;
     }
 
+    /* 4. Alert Card */
     .alert-peak-card {
         background: #fff7ed;
         border-left: 5px solid #f97316;
@@ -185,15 +192,39 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(249, 115, 22, 0.04);
     }
 
-    button[data-baseweb="tab"] {
-        color: #64748b !important;
-        font-weight: 700 !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: #0284c7 !important;
-        border-bottom: 3px solid #0284c7 !important;
+    /* 5. Pill Bar Container Styling (Sesuai Gambar Referensi) */
+    .pill-nav-container {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 40px;
+        padding: 6px 10px;
+        margin-top: 14px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
+    div[data-testid="stHorizontalBlock"]:has(button[key^="pnav_"]) {
+        background: #ffffff !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 40px !important;
+        padding: 6px 10px !important;
+        margin-top: 14px !important;
+        margin-bottom: 18px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important;
+    }
+
+    button[key^="pnav_"] {
+        border-radius: 30px !important;
+        font-weight: 700 !important;
+        font-size: 0.84rem !important;
+        letter-spacing: 0.04em !important;
+        padding: 8px 18px !important;
+        border: none !important;
+    }
+
+    /* 6. Dataframe Container */
     [data-testid="stDataFrame"] {
         background-color: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
@@ -202,6 +233,7 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
 
+    /* 7. Sidebar Buttons */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
@@ -470,8 +502,23 @@ if st.session_state.active_page == "OVERVIEW":
             </div>
         """, unsafe_allow_html=True)
 
-    tab1, tab2, tab3 = st.tabs(["📈 Distribusi Sentiment & Media", "📌 Sebaran Issue Topic", "📰 Gemini AI News Feed"])
-    with tab1:
+    # --- SEGMENTED PILL BAR SELECTION (MODEL KAPSUL PERSIS GAMBAR) ---
+    p1, p2, p3, p_blank = st.columns([1.6, 1.4, 1.4, 2])
+    with p1:
+        if st.button("📈 DISTRIBUSI SENTIMEN", key="pnav_dist", type="primary" if st.session_state.overview_subtab == "DISTRIBUSI" else "secondary", use_container_width=True):
+            st.session_state.overview_subtab = "DISTRIBUSI"
+            st.rerun()
+    with p2:
+        if st.button("📌 SEBARAN ISSUE TOPIC", key="pnav_topic", type="primary" if st.session_state.overview_subtab == "SEBARAN" else "secondary", use_container_width=True):
+            st.session_state.overview_subtab = "SEBARAN"
+            st.rerun()
+    with p3:
+        if st.button("📰 AI NEWS FEED", key="pnav_feed", type="primary" if st.session_state.overview_subtab == "FEED" else "secondary", use_container_width=True):
+            st.session_state.overview_subtab = "FEED"
+            st.rerun()
+
+    # Konten Berdasarkan Pill yang Dipilih
+    if st.session_state.overview_subtab == "DISTRIBUSI":
         c1, c2 = st.columns([1, 1.4])
         with c1:
             st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Porsi Sentiment</p>", unsafe_allow_html=True)
@@ -489,7 +536,7 @@ if st.session_state.active_page == "OVERVIEW":
                 fig_tier.update_layout(xaxis_title="Tier Media", yaxis_title="Jumlah Berita")
                 st.plotly_chart(fig_tier, use_container_width=True)
 
-    with tab2:
+    elif st.session_state.overview_subtab == "SEBARAN":
         c_top1, c_top2 = st.columns([1.2, 1])
         with c_top1:
             st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Komposisi Sentiment per Issue Topic</p>", unsafe_allow_html=True)
@@ -509,10 +556,10 @@ if st.session_state.active_page == "OVERVIEW":
                 fig_domains.update_layout(yaxis=dict(autorange="reversed"), yaxis_title="", xaxis_title="Total Berita")
                 st.plotly_chart(fig_domains, use_container_width=True)
 
-    with tab3:
-        st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Detail Feed Berita & Ringkasan Gemini AI</p>", unsafe_allow_html=True)
+    elif st.session_state.overview_subtab == "FEED":
+        st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Detail Feed Berita & AI Summary</p>", unsafe_allow_html=True)
         
-        # --- FILTER SENTIMEN KHUSUS TABEL TAB 3 ---
+        # Filter Sentimen Khusus Tabel Feed
         col_t_title, col_t_filter = st.columns([2, 1.2])
         with col_t_filter:
             tbl_sent_choice = st.selectbox(
@@ -526,9 +573,15 @@ if st.session_state.active_page == "OVERVIEW":
         if tbl_sent_choice != "Semua Sentimen" and "sentiment" in df_table_ov.columns:
             df_table_ov = df_table_ov[df_table_ov["sentiment"] == tbl_sent_choice]
             
-        cols = [c for c in ["news_date", "domain", "new_tier", "issue_topic", "sentiment", "gemini_summary", "news_url"] if c in df_table_ov.columns]
+        summary_col = "gemini_summary" if "gemini_summary" in df_table_ov.columns else ("ai_summary" if "ai_summary" in df_table_ov.columns else None)
+        base_cols = ["news_date", "domain", "new_tier", "issue_topic", "sentiment"]
+        if summary_col:
+            base_cols.append(summary_col)
+        if "news_url" in df_table_ov.columns:
+            base_cols.append("news_url")
+            
+        cols = [c for c in base_cols if c in df_table_ov.columns]
         col_config = {
-            "gemini_summary": st.column_config.TextColumn("Ringkasan Berita (Gemini Summary)", width="large"),
             "news_url": st.column_config.LinkColumn("Tautan Berita", display_text="Buka Link 🔗"),
             "domain": st.column_config.TextColumn("Media Domain"),
             "news_date": st.column_config.DateColumn("Tanggal", format="YYYY-MM-DD"),
@@ -536,6 +589,9 @@ if st.session_state.active_page == "OVERVIEW":
             "issue_topic": st.column_config.TextColumn("Issue Topic"),
             "new_tier": st.column_config.TextColumn("Tier")
         }
+        if summary_col:
+            col_config[summary_col] = st.column_config.TextColumn("Ringkasan Berita (AI Summary)", width="large")
+            
         st.dataframe(df_table_ov[cols], column_config=col_config, hide_index=True, use_container_width=True, height=450)
 
 
@@ -627,14 +683,23 @@ elif st.session_state.active_page == "PEAK_ALERT":
 
         st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-top:14px; margin-bottom:6px; color:#1e293b;'>Daftar Berita Pemicu pada Tanggal Puncak ({peak_data['peak_date']})</p>", unsafe_allow_html=True)
         
-        cols_peak = [c for c in ["domain", "new_tier", "issue_topic", "gemini_summary", "news_url"] if c in peak_data["peak_articles"].columns]
+        summary_col_pk = "gemini_summary" if "gemini_summary" in peak_data["peak_articles"].columns else ("ai_summary" if "ai_summary" in peak_data["peak_articles"].columns else None)
+        base_cols_pk = ["domain", "new_tier", "issue_topic"]
+        if summary_col_pk:
+            base_cols_pk.append(summary_col_pk)
+        if "news_url" in peak_data["peak_articles"].columns:
+            base_cols_pk.append("news_url")
+            
+        cols_peak = [c for c in base_cols_pk if c in peak_data["peak_articles"].columns]
         col_cfg_peak = {
-            "gemini_summary": st.column_config.TextColumn("Ringkasan Isu Berita (Gemini Summary)", width="large"),
             "news_url": st.column_config.LinkColumn("Tautan Berita", display_text="Buka Link 🔗"),
             "domain": st.column_config.TextColumn("Portal Media"),
             "issue_topic": st.column_config.TextColumn("Topik Isu"),
             "new_tier": st.column_config.TextColumn("Tier")
         }
+        if summary_col_pk:
+            col_cfg_peak[summary_col_pk] = st.column_config.TextColumn("Ringkasan Isu Berita (AI Summary)", width="large")
+            
         st.dataframe(peak_data["peak_articles"][cols_peak], column_config=col_cfg_peak, hide_index=True, use_container_width=True, height=360)
 
     else:
@@ -727,9 +792,9 @@ elif st.session_state.active_page == "DEEP_DIVE":
                 fig_deep_tier.update_layout(xaxis_title="Tier Media", yaxis_title="Jumlah")
                 st.plotly_chart(fig_deep_tier, use_container_width=True)
 
-        st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Daftar Berita & AI Summary Khusus Topik: '{selected_single_topic}'</p>", unsafe_allow_html=True)
         
-        # --- FILTER SENTIMEN KHUSUS TABEL DEEP DIVE ---
+        # Filter Sentimen Khusus Tabel Deep Dive
         col_dt_title, col_dt_filter = st.columns([2, 1.2])
         with col_dt_filter:
             tbl_sent_choice_deep = st.selectbox(
@@ -743,13 +808,22 @@ elif st.session_state.active_page == "DEEP_DIVE":
         if tbl_sent_choice_deep != "Semua Sentimen" and "sentiment" in df_table_deep.columns:
             df_table_deep = df_table_deep[df_table_deep["sentiment"] == tbl_sent_choice_deep]
 
-        cols_deep = [c for c in ["news_date", "domain", "new_tier", "sentiment", "gemini_summary", "news_url"] if c in df_table_deep.columns]
+        summary_col_dp = "gemini_summary" if "gemini_summary" in df_table_deep.columns else ("ai_summary" if "ai_summary" in df_table_deep.columns else None)
+        base_cols_dp = ["news_date", "domain", "new_tier", "sentiment"]
+        if summary_col_dp:
+            base_cols_dp.append(summary_col_dp)
+        if "news_url" in df_table_deep.columns:
+            base_cols_dp.append("news_url")
+
+        cols_deep = [c for c in base_cols_dp if c in df_table_deep.columns]
         col_cfg_deep = {
-            "gemini_summary": st.column_config.TextColumn("Ringkasan Berita (Gemini Summary)", width="large"),
             "news_url": st.column_config.LinkColumn("Link Berita", display_text="Buka Link 🔗"),
             "domain": st.column_config.TextColumn("Media Domain"),
             "news_date": st.column_config.DateColumn("Tanggal", format="YYYY-MM-DD")
         }
+        if summary_col_dp:
+            col_cfg_deep[summary_col_dp] = st.column_config.TextColumn("Ringkasan Berita (AI Summary)", width="large")
+            
         st.dataframe(df_table_deep[cols_deep], column_config=col_cfg_deep, hide_index=True, use_container_width=True, height=380)
 
     else:
