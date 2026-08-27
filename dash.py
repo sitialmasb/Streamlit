@@ -21,7 +21,7 @@ if "active_page" not in st.session_state:
 if "overview_subtab" not in st.session_state:
     st.session_state.overview_subtab = "DISTRIBUSI"
 
-# Custom CSS
+# Custom CSS: Segmented Capsule Tab Bar & Jarak Spacing
 st.markdown("""
 <style>
     /* 1. Base App & Sidebar Background */
@@ -192,36 +192,53 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(249, 115, 22, 0.04);
     }
 
-    /* 5. Pill Bar Container Styling (Sesuai Gambar Referensi) */
-    .pill-nav-container {
-        background: #ffffff;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 40px;
-        padding: 6px 10px;
-        margin-top: 14px;
-        margin-bottom: 18px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    /* ========================================================
+       5. CONTINUOUS CAPSULE RAIL (PERSIS GAMBAR 2)
+       ======================================================== */
+    div.capsule-rail-wrapper {
+        margin-top: 28px !important;
+        margin-bottom: 22px !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(button[key^="pnav_"]) {
         background: #ffffff !important;
         border: 1.5px solid #e2e8f0 !important;
-        border-radius: 40px !important;
-        padding: 6px 10px !important;
-        margin-top: 14px !important;
-        margin-bottom: 18px !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important;
+        border-radius: 50px !important;
+        padding: 7px 10px !important;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03) !important;
+        align-items: center !important;
+        display: flex !important;
     }
 
-    button[key^="pnav_"] {
-        border-radius: 30px !important;
-        font-weight: 700 !important;
-        font-size: 0.84rem !important;
-        letter-spacing: 0.04em !important;
-        padding: 8px 18px !important;
+    /* Tombol Inactive di dalam Rail */
+    div[data-testid="stHorizontalBlock"] button[key^="pnav_"] {
+        background: transparent !important;
         border: none !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
+        font-size: 0.83rem !important;
+        letter-spacing: 0.03em !important;
+        border-radius: 40px !important;
+        padding: 9px 20px !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] button[key^="pnav_"]:hover {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
+
+    /* Tombol Active: Solid Biru Tua Persis Gambar */
+    div[data-testid="stHorizontalBlock"] button[key^="pnav_"][kind="primary"] {
+        background: #00529b !important; /* Deep Blue Navy */
+        color: #ffffff !important;
+        border-radius: 40px !important;
+        box-shadow: 0 4px 10px rgba(0, 82, 155, 0.25) !important;
+        font-weight: 800 !important;
+    }
+    
+    div[data-testid="stHorizontalBlock"] button[key^="pnav_"][kind="primary"] p {
+        color: #ffffff !important;
     }
 
     /* 6. Dataframe Container */
@@ -502,20 +519,22 @@ if st.session_state.active_page == "OVERVIEW":
             </div>
         """, unsafe_allow_html=True)
 
-    # --- SEGMENTED PILL BAR SELECTION (MODEL KAPSUL PERSIS GAMBAR) ---
-    p1, p2, p3, p_blank = st.columns([1.6, 1.4, 1.4, 2])
+    # --- KONTROL KAPSUL MEMANJANG (JARAK LEGA & WARNA BIRU TUA PADA AKTIF) ---
+    st.markdown('<div class="capsule-rail-wrapper">', unsafe_allow_html=True)
+    p1, p2, p3, p_blank = st.columns([1.8, 1.8, 1.6, 2.8])
     with p1:
-        if st.button("📈 DISTRIBUSI SENTIMEN", key="pnav_dist", type="primary" if st.session_state.overview_subtab == "DISTRIBUSI" else "secondary", use_container_width=True):
+        if st.button("📊 DISTRIBUSI SENTIMEN", key="pnav_dist", type="primary" if st.session_state.overview_subtab == "DISTRIBUSI" else "secondary", use_container_width=True):
             st.session_state.overview_subtab = "DISTRIBUSI"
             st.rerun()
     with p2:
-        if st.button("📌 SEBARAN ISSUE TOPIC", key="pnav_topic", type="primary" if st.session_state.overview_subtab == "SEBARAN" else "secondary", use_container_width=True):
+        if st.button("🏷️ SEBARAN ISSUE TOPIC", key="pnav_topic", type="primary" if st.session_state.overview_subtab == "SEBARAN" else "secondary", use_container_width=True):
             st.session_state.overview_subtab = "SEBARAN"
             st.rerun()
     with p3:
         if st.button("📰 AI NEWS FEED", key="pnav_feed", type="primary" if st.session_state.overview_subtab == "FEED" else "secondary", use_container_width=True):
             st.session_state.overview_subtab = "FEED"
             st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Konten Berdasarkan Pill yang Dipilih
     if st.session_state.overview_subtab == "DISTRIBUSI":
@@ -559,7 +578,6 @@ if st.session_state.active_page == "OVERVIEW":
     elif st.session_state.overview_subtab == "FEED":
         st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Detail Feed Berita & AI Summary</p>", unsafe_allow_html=True)
         
-        # Filter Sentimen Khusus Tabel Feed
         col_t_title, col_t_filter = st.columns([2, 1.2])
         with col_t_filter:
             tbl_sent_choice = st.selectbox(
@@ -794,7 +812,6 @@ elif st.session_state.active_page == "DEEP_DIVE":
 
         st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Daftar Berita & AI Summary Khusus Topik: '{selected_single_topic}'</p>", unsafe_allow_html=True)
         
-        # Filter Sentimen Khusus Tabel Deep Dive
         col_dt_title, col_dt_filter = st.columns([2, 1.2])
         with col_dt_filter:
             tbl_sent_choice_deep = st.selectbox(
