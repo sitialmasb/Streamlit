@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import os
 
 # ==========================================
-# 1. KONFIGURASI HALAMAN & TEMA TERANG
+# 1. KONFIGURASI HALAMAN
 # ==========================================
 st.set_page_config(
     page_title="Pertamina Trust Radar",
@@ -18,10 +18,10 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "MONITORING"
 
-# Custom CSS: Latar Abu & Putih untuk Semua Widget + Teks Hitam Kontras
+# Custom CSS Kuat: Menghilangkan Background Hitam & Merah pada Multiselect
 st.markdown("""
 <style>
-    /* 1. Base App & Sidebar Background */
+    /* 1. Paksa background App & Sidebar */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #f8fafc !important;
     }
@@ -37,12 +37,12 @@ st.markdown("""
         gap: 0.35rem !important;
     }
 
-    /* 2. Global Text: Hitam Pekat */
+    /* 2. Semua teks wajib gelap */
     html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong, div {
         color: #0f172a !important;
     }
 
-    /* 3. Label Filter & Widget */
+    /* 3. Label Filter */
     [data-testid="stWidgetLabel"] label, 
     [data-testid="stWidgetLabel"] p,
     .stSelectbox label, 
@@ -52,41 +52,49 @@ st.markdown("""
         font-size: 0.88rem !important;
     }
 
-    /* 4. Selectbox & Multiselect Input Box: Abu-Abu Lembut (#f1f5f9) */
-    div[data-baseweb="select"] {
-        background-color: #f1f5f9 !important;
-        border-radius: 8px !important;
-    }
-    div[data-baseweb="select"] > div {
-        background-color: #f1f5f9 !important;
+    /* 4. MENGHILANGKAN KOTAK HITAM PADA MULTISELECT & SELECTBOX */
+    div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    div[data-baseweb="select"] > div,
+    div[role="combobox"] {
+        background-color: #f1f5f9 !important; /* Abu-abu lembut */
         border: 1.5px solid #cbd5e1 !important;
         border-radius: 8px !important;
         color: #000000 !important;
     }
-    div[data-baseweb="select"] * {
-        color: #000000 !important;
-    }
 
-    /* 5. Tag / Chip di dalam Multiselect: Abu-Abu Terang */
+    /* 5. MENGHILANGKAN CHIP MERAH: Ubah jadi Abu-abu Bersih dengan teks Hitam */
+    div[data-baseweb="select"] span[data-baseweb="tag"],
     span[data-baseweb="tag"] {
-        background-color: #e2e8f0 !important;
+        background-color: #e2e8f0 !important; /* Abu-abu chip */
         border: 1px solid #94a3b8 !important;
         border-radius: 6px !important;
     }
+    div[data-baseweb="select"] span[data-baseweb="tag"] span,
     span[data-baseweb="tag"] span {
-        color: #000000 !important;
+        color: #000000 !important; /* Teks chip hitam */
         font-weight: 700 !important;
     }
+    div[data-baseweb="select"] span[data-baseweb="tag"] svg,
     span[data-baseweb="tag"] svg {
-        fill: #000000 !important;
+        fill: #000000 !important; /* Ikon silang hitam */
+        color: #000000 !important;
     }
 
-    /* 6. Dropdown List / Pop-up Menu Options: Abu-Abu & Putih */
+    /* Ikon panah dan tombol clear di dalam input */
+    div[data-baseweb="select"] svg {
+        fill: #475569 !important;
+    }
+    div[data-baseweb="select"] input {
+        color: #000000 !important;
+    }
+
+    /* 6. Dropdown Menu Popover */
     div[data-baseweb="popover"], 
     div[data-baseweb="popover"] ul,
     div[data-baseweb="menu"],
     div[data-baseweb="menu"] li {
-        background-color: #f8fafc !important;
+        background-color: #ffffff !important;
         color: #000000 !important;
     }
     div[data-baseweb="menu"] li:hover {
@@ -232,8 +240,8 @@ def load_local_dataset():
             
     # Dummy fallback
     np.random.seed(42)
-    topics = ["Distribusi BBM & LPG", "Transisi Energi & ESG", "Operasional Kilang", "Kinerja Finansial & Investasi", "Layanan Konsumen & SPBU"]
-    domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com", "cnbcindonesia.com", "tribunnews.com"]
+    topics = ["integrity", "loyalty", "quality", "services_facility", "other"]
+    domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com", "cnbcindonesia.com"]
     dates = pd.date_range(end="2026-08-25", periods=60, freq="D")
     
     sample_data = pd.DataFrame({
@@ -486,7 +494,7 @@ elif st.session_state.active_page == "DEEP_DIVE":
         with d3:
             st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#d97706;">{deep_neu}</div><div class="metric-sub" style="color:#d97706;">{(deep_neu/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
         with d4:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#dc2626;">{deep_neg}</div><div class="metric-sub" style="color:#dc2626;">{(deep_neg/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#dc2626;">{deep_neg}</div><div class="metric-sub" style="color:#dc2626;">Perlu Tindakan</div></div>', unsafe_allow_html=True)
 
         st.write("")
 
