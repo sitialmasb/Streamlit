@@ -9,7 +9,7 @@ import os
 # 1. KONFIGURASI HALAMAN & TEMA PUTIH BERBORDER
 # ==========================================
 st.set_page_config(
-    page_title="Sentiment Analysis",
+    page_title="SENTIMENT ANALYSIS",
     page_icon="📡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -18,18 +18,17 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "MONITORING"
 
-# Custom CSS: Latar putih + border abu-abu di semua widget & container
+# Custom CSS Agresif untuk Memaksa Warna Putih + Font Hitam Tebal
 st.markdown("""
 <style>
-    /* 1. Base App & Sidebar Background */
+    /* 1. App & Sidebar Base Background */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #f8fafc !important;
     }
     [data-testid="stSidebar"] {
         background-color: #ffffff !important;
-        border-right: 1px solid #e2e8f0 !important;
+        border-right: 1px solid #cbd5e1 !important;
     }
-    
     section[data-testid="stSidebar"] .block-container {
         padding-top: 1.5rem !important;
         padding-bottom: 1rem !important;
@@ -38,91 +37,118 @@ st.markdown("""
         gap: 0.35rem !important;
     }
 
-    /* 2. Global Text Colors */
-    html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong {
+    /* 2. Global Text: Hitam Pekat */
+    html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong, div {
         color: #0f172a !important;
     }
 
-    /* 3. Input Widgets (Selectbox, Multiselect, Inputs) berlatar putih & berborder abu */
-    [data-testid="stWidgetLabel"] label, [data-testid="stWidgetLabel"] p {
+    /* 3. Label Filter & Widget */
+    [data-testid="stWidgetLabel"] label, 
+    [data-testid="stWidgetLabel"] p,
+    .stSelectbox label, 
+    .stMultiSelect label {
         color: #0f172a !important;
-        font-weight: 600 !important;
-        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        font-size: 0.88rem !important;
+    }
+
+    /* 4. Selectbox & Multiselect Input Box (Hilangkan Background Hitam) */
+    div[data-baseweb="select"] {
+        background-color: #ffffff !important;
     }
     div[data-baseweb="select"] > div {
         background-color: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-radius: 8px !important;
+        color: #000000 !important;
     }
-    div[data-baseweb="popover"] ul {
-        background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    span[data-baseweb="tag"] {
-        background-color: #f1f5f9 !important;
-        border: 1px solid #cbd5e1 !important;
-    }
-    span[data-baseweb="tag"] span {
-        color: #0f172a !important;
+    div[data-baseweb="select"] * {
+        color: #000000 !important;
     }
 
-    /* 4. Metric Cards Berlatar Putih + Border Abu */
+    /* 5. Tag / Chip di dalam Multiselect */
+    span[data-baseweb="tag"] {
+        background-color: #e2e8f0 !important;
+        border: 1px solid #94a3b8 !important;
+        border-radius: 6px !important;
+    }
+    span[data-baseweb="tag"] span {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    span[data-baseweb="tag"] svg {
+        fill: #000000 !important;
+    }
+
+    /* 6. Dropdown List / Pop-up Menu Options */
+    div[data-baseweb="popover"], 
+    div[data-baseweb="popover"] ul,
+    div[data-baseweb="menu"],
+    div[data-baseweb="menu"] li {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    div[data-baseweb="menu"] li:hover {
+        background-color: #f1f5f9 !important;
+    }
+
+    /* 7. Metric Cards */
     .metric-card {
         border-radius: 12px;
         padding: 16px 20px;
         background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         margin-bottom: 12px;
     }
     .metric-label {
         font-size: 0.75rem;
         font-weight: 700;
-        color: #64748b !important;
+        color: #475569 !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
     .metric-value {
         font-size: 1.8rem;
         font-weight: 800;
-        color: #0f172a !important;
+        color: #000000 !important;
         margin: 4px 0;
     }
     .metric-sub {
         font-size: 0.75rem;
-        font-weight: 600;
+        font-weight: 700;
     }
 
-    /* 5. Container / Card Wrapper untuk Plotly Charts */
+    /* 8. Container Card Grafik */
     .chart-container {
         background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 12px;
         padding: 16px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         margin-bottom: 16px;
     }
 
-    /* 6. Tabs Styling */
+    /* 9. Tabs Navigasi */
     button[data-baseweb="tab"] {
-        color: #64748b !important;
-        font-weight: 600 !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
         color: #2563eb !important;
-        border-bottom: 2px solid #2563eb !important;
+        border-bottom: 3px solid #2563eb !important;
     }
 
-    /* 7. Dataframe Container Styling */
+    /* 10. Dataframe Container */
     [data-testid="stDataFrame"] {
         background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 12px !important;
         padding: 6px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    /* 8. Menu Navigation Flat Button */
+    /* 11. Tombol Menu Halaman */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
@@ -130,22 +156,22 @@ st.markdown("""
         border-radius: 8px;
         padding: 8px 12px;
         margin-bottom: 2px;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 0.82rem;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         background-color: #ffffff !important;
-        color: #475569 !important;
+        color: #1e293b !important;
     }
     section[data-testid="stSidebar"] div.stButton > button:hover {
         background-color: #f8fafc !important;
-        border-color: #cbd5e1 !important;
-        color: #0f172a !important;
+        border-color: #94a3b8 !important;
+        color: #000000 !important;
     }
     section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {
         background-color: #eff6ff !important;
         color: #2563eb !important;
-        border-color: #bfdbfe !important;
-        font-weight: 700 !important;
+        border-color: #93c5fd !important;
+        font-weight: 800 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -229,30 +255,30 @@ color_map_sentiment = {
     'Negative': '#ef4444'
 }
 
-# Helper untuk menerapkan layout putih + border grid tipis pada Plotly
 def apply_clean_white_layout(fig, height=340):
     fig.update_layout(
         height=height,
         margin=dict(l=20, r=20, t=30, b=20),
         paper_bgcolor="#ffffff",
         plot_bgcolor="#ffffff",
-        font=dict(color="#0f172a", size=11),
+        font=dict(color="#000000", size=11, family="Arial"),
         xaxis=dict(
             showgrid=True, 
             gridcolor="#f1f5f9", 
             linecolor="#cbd5e1",
-            tickfont=dict(color="#475569")
+            tickfont=dict(color="#000000", size=10)
         ),
         yaxis=dict(
             showgrid=True, 
             gridcolor="#f1f5f9", 
             linecolor="#cbd5e1",
-            tickfont=dict(color="#475569")
+            tickfont=dict(color="#000000", size=10)
         ),
         legend=dict(
-            bgcolor="rgba(255, 255, 255, 0.9)",
-            bordercolor="#e2e8f0",
-            borderwidth=1
+            bgcolor="rgba(255, 255, 255, 0.95)",
+            bordercolor="#cbd5e1",
+            borderwidth=1,
+            font=dict(color="#000000")
         )
     )
     return fig
@@ -262,7 +288,7 @@ def apply_clean_white_layout(fig, height=340):
 # 3. SIDEBAR: MENU & FILTERS
 # ==========================================
 with st.sidebar:
-    st.markdown("<p style='font-size: 0.85rem; font-weight: 700; margin-bottom: 4px;'>MENU DASHBOARD</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.85rem; font-weight: 800; margin-bottom: 4px; color:#0f172a;'>MENU DASHBOARD</p>", unsafe_allow_html=True)
     
     btn_mon = st.button(
         "📊 SENTIMENT & ISSUE TOPIC MONITORING",
@@ -289,7 +315,7 @@ with st.sidebar:
     else:
         st.info("💡 Memakai data sampel bawaan.")
 
-    st.markdown("<p style='font-size: 0.85rem; font-weight: 700; margin-top: 10px; margin-bottom: 2px;'>🎯 FILTER DATA</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.85rem; font-weight: 800; margin-top: 10px; margin-bottom: 2px; color:#0f172a;'>🎯 FILTER DATA</p>", unsafe_allow_html=True)
 
     sent_list = sorted(list(df_raw["sentiment"].dropna().unique())) if "sentiment" in df_raw.columns else []
     selected_sent = st.multiselect("Sentiment", options=sent_list, default=sent_list)
@@ -327,8 +353,8 @@ if st.session_state.active_page == "MONITORING":
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
             <div style="background: #dc2626; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(220,38,38,0.2);">📡</div>
             <div>
-                <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a;">TKB NEWS'S<span style="color:#2563eb; font-style: italic;">Sentiment Analysis</span></h2>
-                <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #64748b; font-weight: 600;">SENTIMENT & ISSUE TOPIC MONITORING</span>
+                <h2 style="margin: 0; font-size: 1.6rem; color: #000000; font-weight:800;">TKB NEWS'S <span style="color:#2563eb; font-style: italic;">SENTIMETIMENT ANALYSIS</span></h2>
+                <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #334155; font-weight: 700;">SENTIMENT & ISSUE TOPIC MONITORING</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -345,11 +371,11 @@ if st.session_state.active_page == "MONITORING":
     with k2:
         st.markdown(f'<div class="metric-card"><div class="metric-label">Positive</div><div class="metric-value" style="color:#10b981;">{pos_count}</div><div class="metric-sub" style="color:#10b981;">{(pos_count/total_news*100) if total_news else 0:.1f}%</div></div>', unsafe_allow_html=True)
     with k3:
-        st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#f59e0b;">{neu_count}</div><div class="metric-sub" style="color:#f59e0b;">{(neu_count/total_news*100) if total_news else 0:.1f}%</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#d97706;">{neu_count}</div><div class="metric-sub" style="color:#d97706;">{(neu_count/total_news*100) if total_news else 0:.1f}%</div></div>', unsafe_allow_html=True)
     with k4:
-        st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#ef4444;">{neg_count}</div><div class="metric-sub" style="color:#ef4444;">Perlu Tindakan</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#dc2626;">{neg_count}</div><div class="metric-sub" style="color:#dc2626;">Perlu Tindakan</div></div>', unsafe_allow_html=True)
     with k5:
-        st.markdown(f'<div class="metric-card"><div class="metric-label">Top Topic</div><div class="metric-value" style="color:#8b5cf6; font-size:1.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{top_topic}">{top_topic}</div><div class="metric-sub" style="color:#8b5cf6;">Volume Terbesar</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card"><div class="metric-label">Top Topic</div><div class="metric-value" style="color:#7c3aed; font-size:1.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{top_topic}">{top_topic}</div><div class="metric-sub" style="color:#7c3aed;">Volume Terbesar</div></div>', unsafe_allow_html=True)
 
     st.write("")
 
@@ -359,7 +385,7 @@ if st.session_state.active_page == "MONITORING":
         c1, c2 = st.columns([1, 1.2])
         with c1:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.subheader("Porsi Sentiment")
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Porsi Sentiment</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "sentiment" in df_filtered.columns:
                 fig_pie = px.pie(df_filtered, names='sentiment', hole=0.55, color='sentiment', color_discrete_map=color_map_sentiment)
                 fig_pie.update_traces(textinfo='percent+value')
@@ -369,7 +395,7 @@ if st.session_state.active_page == "MONITORING":
             
         with c2:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.subheader("Sentiment Berdasarkan Tier Media")
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Sentiment Berdasarkan Tier Media</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "new_tier" in df_filtered.columns and "sentiment" in df_filtered.columns:
                 df_tier_sent = df_filtered.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
                 fig_tier = px.bar(df_tier_sent, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='group', text='count')
@@ -382,7 +408,7 @@ if st.session_state.active_page == "MONITORING":
         c_top1, c_top2 = st.columns([1.2, 1])
         with c_top1:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.subheader("Komposisi Sentiment per Issue Topic")
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Komposisi Sentiment per Issue Topic</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "issue_topic" in df_filtered.columns and "sentiment" in df_filtered.columns:
                 df_top_sent = df_filtered.groupby(['issue_topic', 'sentiment']).size().reset_index(name='count')
                 fig_top = px.bar(df_top_sent, y='issue_topic', x='count', color='sentiment', color_discrete_map=color_map_sentiment, orientation='h', barmode='stack')
@@ -393,7 +419,7 @@ if st.session_state.active_page == "MONITORING":
             
         with c_top2:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.subheader("Top Domain Media (Volume)")
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Top Domain Media (Volume)</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "domain" in df_filtered.columns:
                 top_domains = df_filtered['domain'].value_counts().head(8).reset_index()
                 top_domains.columns = ['Domain', 'Count']
@@ -404,7 +430,7 @@ if st.session_state.active_page == "MONITORING":
             st.markdown('</div>', unsafe_allow_html=True)
 
     with tab3:
-        st.subheader("Detail Feed Berita & Ringkasan Gemini AI")
+        st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Detail Feed Berita & Ringkasan Gemini AI</p>", unsafe_allow_html=True)
         cols = [c for c in ["news_date", "domain", "new_tier", "issue_topic", "sentiment", "gemini_summary", "news_url"] if c in df_filtered.columns]
         
         col_config = {
@@ -427,8 +453,8 @@ elif st.session_state.active_page == "DEEP_DIVE":
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
             <div style="background: #2563eb; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(37,99,235,0.2);">🔍</div>
             <div>
-                <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a;">TOPIC <span style="color:#2563eb; font-style: italic;">DEEP DIVE</span></h2>
-                <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #64748b; font-weight: 600;">IN-DEPTH SINGLE TOPIC INVESTIGATION & ANALYSIS</span>
+                <h2 style="margin: 0; font-size: 1.6rem; color: #000000; font-weight:800;">TOPIC <span style="color:#2563eb; font-style: italic;">DEEP DIVE</span></h2>
+                <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #334155; font-weight: 700;">IN-DEPTH SINGLE TOPIC INVESTIGATION & ANALYSIS</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -451,16 +477,16 @@ elif st.session_state.active_page == "DEEP_DIVE":
         with d2:
             st.markdown(f'<div class="metric-card"><div class="metric-label">Positive</div><div class="metric-value" style="color:#10b981;">{deep_pos}</div><div class="metric-sub" style="color:#10b981;">{(deep_pos/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
         with d3:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#f59e0b;">{deep_neu}</div><div class="metric-sub" style="color:#f59e0b;">{(deep_neu/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#d97706;">{deep_neu}</div><div class="metric-sub" style="color:#d97706;">{(deep_neu/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
         with d4:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#ef4444;">{deep_neg}</div><div class="metric-sub" style="color:#ef4444;">{(deep_neg/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#dc2626;">{deep_neg}</div><div class="metric-sub" style="color:#dc2626;">{(deep_neg/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
 
         st.write("")
 
         col_g1, col_g2 = st.columns([1, 1])
         with col_g1:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.subheader(f"Proporsi Sentiment: {selected_single_topic}")
+            st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Proporsi Sentiment: {selected_single_topic}</p>", unsafe_allow_html=True)
             if not df_deep.empty and "sentiment" in df_deep.columns:
                 fig_deep_pie = px.pie(df_deep, names='sentiment', hole=0.5, color='sentiment', color_discrete_map=color_map_sentiment)
                 fig_deep_pie.update_traces(textinfo='percent+value')
@@ -470,7 +496,7 @@ elif st.session_state.active_page == "DEEP_DIVE":
             
         with col_g2:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.subheader(f"Sebaran Media Tier: {selected_single_topic}")
+            st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Sebaran Media Tier: {selected_single_topic}</p>", unsafe_allow_html=True)
             if not df_deep.empty and "new_tier" in df_deep.columns and "sentiment" in df_deep.columns:
                 df_deep_tier = df_deep.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
                 fig_deep_tier = px.bar(df_deep_tier, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='stack', text='count')
@@ -479,7 +505,7 @@ elif st.session_state.active_page == "DEEP_DIVE":
                 st.plotly_chart(fig_deep_tier, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-        st.subheader(f"Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'")
+        st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'</p>", unsafe_allow_html=True)
         cols_deep = [c for c in ["news_date", "domain", "new_tier", "sentiment", "gemini_summary", "news_url"] if c in df_deep.columns]
         col_cfg_deep = {
             "gemini_summary": st.column_config.TextColumn("Ringkasan Berita (Gemini Summary)", width="large"),
@@ -496,4 +522,4 @@ elif st.session_state.active_page == "DEEP_DIVE":
 # 6. FOOTER
 # ==========================================
 st.markdown("---")
-st.markdown("<center style='color:#94a3b8; font-size:0.8rem;'>© Copyright PT Pertamina (Persero) 2026. All Rights Reserved</center>", unsafe_allow_html=True)
+st.markdown("<center style='color:#64748b; font-size:0.8rem; font-weight:600;'>© Copyright PT Pertamina (Persero) 2026. All Rights Reserved</center>", unsafe_allow_html=True)
