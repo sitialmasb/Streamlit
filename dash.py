@@ -6,10 +6,10 @@ import plotly.graph_objects as go
 import os
 
 # ==========================================
-# 1. KONFIGURASI HALAMAN & TEMA PUTIH BERBORDER
+# 1. KONFIGURASI HALAMAN & TEMA TERANG
 # ==========================================
 st.set_page_config(
-    page_title="SENTIMENT ANALYSIS",
+    page_title="Pertamina Trust Radar",
     page_icon="📡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -18,10 +18,10 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "MONITORING"
 
-# Custom CSS Agresif untuk Memaksa Warna Putih + Font Hitam Tebal
+# Custom CSS: Latar Abu & Putih untuk Semua Widget + Teks Hitam Kontras
 st.markdown("""
 <style>
-    /* 1. App & Sidebar Base Background */
+    /* 1. Base App & Sidebar Background */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #f8fafc !important;
     }
@@ -47,17 +47,18 @@ st.markdown("""
     [data-testid="stWidgetLabel"] p,
     .stSelectbox label, 
     .stMultiSelect label {
-        color: #0f172a !important;
+        color: #000000 !important;
         font-weight: 700 !important;
         font-size: 0.88rem !important;
     }
 
-    /* 4. Selectbox & Multiselect Input Box (Hilangkan Background Hitam) */
+    /* 4. Selectbox & Multiselect Input Box: Abu-Abu Lembut (#f1f5f9) */
     div[data-baseweb="select"] {
-        background-color: #ffffff !important;
+        background-color: #f1f5f9 !important;
+        border-radius: 8px !important;
     }
     div[data-baseweb="select"] > div {
-        background-color: #ffffff !important;
+        background-color: #f1f5f9 !important;
         border: 1.5px solid #cbd5e1 !important;
         border-radius: 8px !important;
         color: #000000 !important;
@@ -66,7 +67,7 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* 5. Tag / Chip di dalam Multiselect */
+    /* 5. Tag / Chip di dalam Multiselect: Abu-Abu Terang */
     span[data-baseweb="tag"] {
         background-color: #e2e8f0 !important;
         border: 1px solid #94a3b8 !important;
@@ -74,22 +75,26 @@ st.markdown("""
     }
     span[data-baseweb="tag"] span {
         color: #000000 !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
     span[data-baseweb="tag"] svg {
         fill: #000000 !important;
     }
 
-    /* 6. Dropdown List / Pop-up Menu Options */
+    /* 6. Dropdown List / Pop-up Menu Options: Abu-Abu & Putih */
     div[data-baseweb="popover"], 
     div[data-baseweb="popover"] ul,
     div[data-baseweb="menu"],
     div[data-baseweb="menu"] li {
-        background-color: #ffffff !important;
+        background-color: #f8fafc !important;
         color: #000000 !important;
     }
     div[data-baseweb="menu"] li:hover {
-        background-color: #f1f5f9 !important;
+        background-color: #e2e8f0 !important;
+    }
+    div[data-baseweb="menu"] li * {
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
 
     /* 7. Metric Cards */
@@ -103,8 +108,8 @@ st.markdown("""
     }
     .metric-label {
         font-size: 0.75rem;
-        font-weight: 700;
-        color: #475569 !important;
+        font-weight: 800;
+        color: #334155 !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
@@ -148,7 +153,7 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    /* 11. Tombol Menu Halaman */
+    /* 11. Tombol Menu Navigasi */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
@@ -159,11 +164,11 @@ st.markdown("""
         font-weight: 700;
         font-size: 0.82rem;
         border: 1px solid #cbd5e1 !important;
-        background-color: #ffffff !important;
-        color: #1e293b !important;
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
     }
     section[data-testid="stSidebar"] div.stButton > button:hover {
-        background-color: #f8fafc !important;
+        background-color: #e2e8f0 !important;
         border-color: #94a3b8 !important;
         color: #000000 !important;
     }
@@ -349,11 +354,12 @@ if st.session_state.active_page == "MONITORING" and selected_topic and "issue_to
 # 4. HALAMAN 1: MONITORING
 # ==========================================
 if st.session_state.active_page == "MONITORING":
+    # Header Icon Putih Berborder Abu
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <div style="background: #dc2626; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(220,38,38,0.2);">📡</div>
+            <div style="background: #ffffff; border: 1.5px solid #cbd5e1; padding: 10px; border-radius: 12px; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">📡</div>
             <div>
-                <h2 style="margin: 0; font-size: 1.6rem; color: #000000; font-weight:800;">TKB NEWS'S <span style="color:#2563eb; font-style: italic;">SENTIMETIMENT ANALYSIS</span></h2>
+                <h2 style="margin: 0; font-size: 1.6rem; color: #000000; font-weight:800;">PERTAMINA <span style="color:#2563eb; font-style: italic;">TRUSTRADAR</span></h2>
                 <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #334155; font-weight: 700;">SENTIMENT & ISSUE TOPIC MONITORING</span>
             </div>
         </div>
@@ -449,9 +455,10 @@ if st.session_state.active_page == "MONITORING":
 # 5. HALAMAN 2: TOPIC DEEP DIVE
 # ==========================================
 elif st.session_state.active_page == "DEEP_DIVE":
+    # Header Icon Putih Berborder Abu
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <div style="background: #2563eb; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(37,99,235,0.2);">🔍</div>
+            <div style="background: #ffffff; border: 1.5px solid #cbd5e1; padding: 10px; border-radius: 12px; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">🔍</div>
             <div>
                 <h2 style="margin: 0; font-size: 1.6rem; color: #000000; font-weight:800;">TOPIC <span style="color:#2563eb; font-style: italic;">DEEP DIVE</span></h2>
                 <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #334155; font-weight: 700;">IN-DEPTH SINGLE TOPIC INVESTIGATION & ANALYSIS</span>
@@ -522,4 +529,4 @@ elif st.session_state.active_page == "DEEP_DIVE":
 # 6. FOOTER
 # ==========================================
 st.markdown("---")
-st.markdown("<center style='color:#64748b; font-size:0.8rem; font-weight:600;'>© Copyright PT Pertamina (Persero) 2026. All Rights Reserved</center>", unsafe_allow_html=True)
+st.markdown("<center style='color:#64748b; font-size:0.8rem; font-weight:700;'>© Copyright PT Pertamina (Persero) 2026. All Rights Reserved</center>", unsafe_allow_html=True)
