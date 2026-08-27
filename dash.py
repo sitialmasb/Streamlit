@@ -6,10 +6,10 @@ import plotly.graph_objects as go
 import os
 
 # ==========================================
-# 1. KONFIGURASI HALAMAN & TEMA PUTIH
+# 1. KONFIGURASI HALAMAN & TEMA PUTIH BERBORDER
 # ==========================================
 st.set_page_config(
-    page_title="Pertamina Trust Radar",
+    page_title="Sentiment Analysis",
     page_icon="📡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -18,15 +18,16 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "MONITORING"
 
-# Custom CSS: Latar putih permanen, teks gelap kontras, & gap sidebar rapat
+# Custom CSS: Latar putih + border abu-abu di semua widget & container
 st.markdown("""
 <style>
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"] {
-        background-color: #ffffff !important;
+    /* 1. Base App & Sidebar Background */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+        background-color: #f8fafc !important;
     }
     [data-testid="stSidebar"] {
-        background-color: #f8fafc !important;
-        border-right: 1px solid #e2e8f0;
+        background-color: #ffffff !important;
+        border-right: 1px solid #e2e8f0 !important;
     }
     
     section[data-testid="stSidebar"] .block-container {
@@ -37,39 +38,42 @@ st.markdown("""
         gap: 0.35rem !important;
     }
 
+    /* 2. Global Text Colors */
     html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong {
         color: #0f172a !important;
     }
-    [data-testid="stWidgetLabel"] label, [data-testid="stWidgetLabel"] p,
-    .stSelectbox label, .stMultiSelect label, .stRadio label, .stDateInput label {
+
+    /* 3. Input Widgets (Selectbox, Multiselect, Inputs) berlatar putih & berborder abu */
+    [data-testid="stWidgetLabel"] label, [data-testid="stWidgetLabel"] p {
         color: #0f172a !important;
         font-weight: 600 !important;
+        font-size: 0.85rem !important;
     }
-    div[data-baseweb="select"] *, div[data-baseweb="popover"] * {
-        color: #0f172a !important;
+    div[data-baseweb="select"] > div {
         background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+    }
+    div[data-baseweb="popover"] ul {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
     }
     span[data-baseweb="tag"] {
-        background-color: #e2e8f0 !important;
+        background-color: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
     }
     span[data-baseweb="tag"] span {
         color: #0f172a !important;
     }
-    button[data-baseweb="tab"] {
-        color: #475569 !important;
-        font-weight: 600 !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: #2563eb !important;
-        border-bottom: 2px solid #2563eb !important;
-    }
+
+    /* 4. Metric Cards Berlatar Putih + Border Abu */
     .metric-card {
-        border-radius: 14px;
+        border-radius: 12px;
         padding: 16px 20px;
         background: #ffffff !important;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        margin-bottom: 10px;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        margin-bottom: 12px;
     }
     .metric-label {
         font-size: 0.75rem;
@@ -89,6 +93,36 @@ st.markdown("""
         font-weight: 600;
     }
 
+    /* 5. Container / Card Wrapper untuk Plotly Charts */
+    .chart-container {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        margin-bottom: 16px;
+    }
+
+    /* 6. Tabs Styling */
+    button[data-baseweb="tab"] {
+        color: #64748b !important;
+        font-weight: 600 !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #2563eb !important;
+        border-bottom: 2px solid #2563eb !important;
+    }
+
+    /* 7. Dataframe Container Styling */
+    [data-testid="stDataFrame"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 6px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    /* 8. Menu Navigation Flat Button */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
@@ -98,12 +132,12 @@ st.markdown("""
         margin-bottom: 2px;
         font-weight: 600;
         font-size: 0.82rem;
-        border: 1px solid transparent;
-        background-color: transparent !important;
+        border: 1px solid #e2e8f0 !important;
+        background-color: #ffffff !important;
         color: #475569 !important;
     }
     section[data-testid="stSidebar"] div.stButton > button:hover {
-        background-color: #f1f5f9 !important;
+        background-color: #f8fafc !important;
         border-color: #cbd5e1 !important;
         color: #0f172a !important;
     }
@@ -165,7 +199,7 @@ def load_local_dataset():
         except Exception as e:
             st.error(f"Gagal membaca file {file_found}: {e}")
             
-    # Dummy fallback data
+    # Dummy fallback
     np.random.seed(42)
     topics = ["Distribusi BBM & LPG", "Transisi Energi & ESG", "Operasional Kilang", "Kinerja Finansial & Investasi", "Layanan Konsumen & SPBU"]
     domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com", "cnbcindonesia.com", "tribunnews.com"]
@@ -195,9 +229,37 @@ color_map_sentiment = {
     'Negative': '#ef4444'
 }
 
+# Helper untuk menerapkan layout putih + border grid tipis pada Plotly
+def apply_clean_white_layout(fig, height=340):
+    fig.update_layout(
+        height=height,
+        margin=dict(l=20, r=20, t=30, b=20),
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        font=dict(color="#0f172a", size=11),
+        xaxis=dict(
+            showgrid=True, 
+            gridcolor="#f1f5f9", 
+            linecolor="#cbd5e1",
+            tickfont=dict(color="#475569")
+        ),
+        yaxis=dict(
+            showgrid=True, 
+            gridcolor="#f1f5f9", 
+            linecolor="#cbd5e1",
+            tickfont=dict(color="#475569")
+        ),
+        legend=dict(
+            bgcolor="rgba(255, 255, 255, 0.9)",
+            bordercolor="#e2e8f0",
+            borderwidth=1
+        )
+    )
+    return fig
+
 
 # ==========================================
-# 3. SIDEBAR: COMPACT MENU & FILTERS (NO LOGO)
+# 3. SIDEBAR: MENU & FILTERS
 # ==========================================
 with st.sidebar:
     st.markdown("<p style='font-size: 0.85rem; font-weight: 700; margin-bottom: 4px;'>MENU DASHBOARD</p>", unsafe_allow_html=True)
@@ -263,9 +325,9 @@ if st.session_state.active_page == "MONITORING" and selected_topic and "issue_to
 if st.session_state.active_page == "MONITORING":
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <div style="background: #dc2626; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem;">📡</div>
+            <div style="background: #dc2626; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(220,38,38,0.2);">📡</div>
             <div>
-                <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a;">PERTAMINA <span style="color:#2563eb; font-style: italic;">TRUSTRADAR</span></h2>
+                <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a;">TKB NEWS'S<span style="color:#2563eb; font-style: italic;">Sentiment Analysis</span></h2>
                 <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #64748b; font-weight: 600;">SENTIMENT & ISSUE TOPIC MONITORING</span>
             </div>
         </div>
@@ -292,40 +354,54 @@ if st.session_state.active_page == "MONITORING":
     st.write("")
 
     tab1, tab2, tab3 = st.tabs(["📈 Distribusi Sentiment & Media", "📌 Sebaran Issue Topic", "📰 Gemini AI News Feed"])
+    
     with tab1:
         c1, c2 = st.columns([1, 1.2])
         with c1:
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             st.subheader("Porsi Sentiment")
             if not df_filtered.empty and "sentiment" in df_filtered.columns:
                 fig_pie = px.pie(df_filtered, names='sentiment', hole=0.55, color='sentiment', color_discrete_map=color_map_sentiment)
                 fig_pie.update_traces(textinfo='percent+value')
-                fig_pie.update_layout(height=340, margin=dict(l=10, r=10, t=20, b=10))
+                fig_pie = apply_clean_white_layout(fig_pie, height=320)
                 st.plotly_chart(fig_pie, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
         with c2:
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             st.subheader("Sentiment Berdasarkan Tier Media")
             if not df_filtered.empty and "new_tier" in df_filtered.columns and "sentiment" in df_filtered.columns:
                 df_tier_sent = df_filtered.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
                 fig_tier = px.bar(df_tier_sent, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='group', text='count')
-                fig_tier.update_layout(height=340, margin=dict(l=10, r=10, t=20, b=10), xaxis_title="Tier Media", yaxis_title="Jumlah Berita")
+                fig_tier = apply_clean_white_layout(fig_tier, height=320)
+                fig_tier.update_layout(xaxis_title="Tier Media", yaxis_title="Jumlah Berita")
                 st.plotly_chart(fig_tier, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
     with tab2:
         c_top1, c_top2 = st.columns([1.2, 1])
         with c_top1:
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             st.subheader("Komposisi Sentiment per Issue Topic")
             if not df_filtered.empty and "issue_topic" in df_filtered.columns and "sentiment" in df_filtered.columns:
                 df_top_sent = df_filtered.groupby(['issue_topic', 'sentiment']).size().reset_index(name='count')
                 fig_top = px.bar(df_top_sent, y='issue_topic', x='count', color='sentiment', color_discrete_map=color_map_sentiment, orientation='h', barmode='stack')
-                fig_top.update_layout(height=350, yaxis_title="", xaxis_title="Jumlah Berita")
+                fig_top = apply_clean_white_layout(fig_top, height=330)
+                fig_top.update_layout(yaxis_title="", xaxis_title="Jumlah Berita")
                 st.plotly_chart(fig_top, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
         with c_top2:
-            st.subheader("Top Domain Media (Volume Terbanyak)")
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+            st.subheader("Top Domain Media (Volume)")
             if not df_filtered.empty and "domain" in df_filtered.columns:
                 top_domains = df_filtered['domain'].value_counts().head(8).reset_index()
                 top_domains.columns = ['Domain', 'Count']
                 fig_domains = px.bar(top_domains, x='Count', y='Domain', orientation='h', color_discrete_sequence=['#2563eb'], text='Count')
-                fig_domains.update_layout(height=350, yaxis=dict(autorange="reversed"), yaxis_title="", xaxis_title="Total Berita")
+                fig_domains = apply_clean_white_layout(fig_domains, height=330)
+                fig_domains.update_layout(yaxis=dict(autorange="reversed"), yaxis_title="", xaxis_title="Total Berita")
                 st.plotly_chart(fig_domains, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
     with tab3:
         st.subheader("Detail Feed Berita & Ringkasan Gemini AI")
@@ -349,7 +425,7 @@ if st.session_state.active_page == "MONITORING":
 elif st.session_state.active_page == "DEEP_DIVE":
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <div style="background: #2563eb; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem;">🔍</div>
+            <div style="background: #2563eb; padding: 10px; border-radius: 12px; color: white; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(37,99,235,0.2);">🔍</div>
             <div>
                 <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a;">TOPIC <span style="color:#2563eb; font-style: italic;">DEEP DIVE</span></h2>
                 <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #64748b; font-weight: 600;">IN-DEPTH SINGLE TOPIC INVESTIGATION & ANALYSIS</span>
@@ -383,19 +459,25 @@ elif st.session_state.active_page == "DEEP_DIVE":
 
         col_g1, col_g2 = st.columns([1, 1])
         with col_g1:
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             st.subheader(f"Proporsi Sentiment: {selected_single_topic}")
             if not df_deep.empty and "sentiment" in df_deep.columns:
                 fig_deep_pie = px.pie(df_deep, names='sentiment', hole=0.5, color='sentiment', color_discrete_map=color_map_sentiment)
                 fig_deep_pie.update_traces(textinfo='percent+value')
-                fig_deep_pie.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=10))
+                fig_deep_pie = apply_clean_white_layout(fig_deep_pie, height=300)
                 st.plotly_chart(fig_deep_pie, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
         with col_g2:
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             st.subheader(f"Sebaran Media Tier: {selected_single_topic}")
             if not df_deep.empty and "new_tier" in df_deep.columns and "sentiment" in df_deep.columns:
                 df_deep_tier = df_deep.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
                 fig_deep_tier = px.bar(df_deep_tier, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='stack', text='count')
-                fig_deep_tier.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=10), xaxis_title="Tier Media", yaxis_title="Jumlah")
+                fig_deep_tier = apply_clean_white_layout(fig_deep_tier, height=300)
+                fig_deep_tier.update_layout(xaxis_title="Tier Media", yaxis_title="Jumlah")
                 st.plotly_chart(fig_deep_tier, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
         st.subheader(f"Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'")
         cols_deep = [c for c in ["news_date", "domain", "new_tier", "sentiment", "gemini_summary", "news_url"] if c in df_deep.columns]
