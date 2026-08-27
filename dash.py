@@ -108,7 +108,20 @@ st.markdown("""
         font-weight: 700;
     }
 
-    /* 7. Tabs Navigasi */
+    /* 7. Alert Box Peak Sentimen Negatif */
+    .alert-peak-box {
+        background: #ffffff;
+        border-left: 5px solid #dc2626;
+        border-top: 1px solid #e2e8f0;
+        border-right: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    /* 8. Tabs Navigasi */
     button[data-baseweb="tab"] {
         color: #475569 !important;
         font-weight: 700 !important;
@@ -118,7 +131,7 @@ st.markdown("""
         border-bottom: 3px solid #2563eb !important;
     }
 
-    /* 8. Dataframe Container */
+    /* 9. Dataframe Container */
     [data-testid="stDataFrame"] {
         background-color: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
@@ -127,7 +140,7 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    /* 9. Tombol Menu Navigasi */
+    /* 10. Tombol Menu Navigasi */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
@@ -173,12 +186,9 @@ def standardize_sentiment_en(val):
 
 @st.cache_data
 def load_local_dataset():
-    # Dapatkan direktori absolut dari file script yang sedang berjalan
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Daftar nama file yang dicari di folder
     candidate_files = [
-        "data.xlsx"
+        "data.xlsx", "dataset.xlsx", "data.csv", "dataset.csv"
     ]
     
     file_found = None
@@ -187,7 +197,6 @@ def load_local_dataset():
         if os.path.exists(full_path):
             file_found = full_path
             break
-        # Fallback pencarian direktori relatif
         elif os.path.exists(f):
             file_found = f
             break
@@ -195,7 +204,6 @@ def load_local_dataset():
     if file_found:
         try:
             if file_found.endswith('.csv'):
-                # Handle separator koma atau titik koma otomatis
                 try:
                     df = pd.read_csv(file_found)
                 except Exception:
@@ -203,7 +211,6 @@ def load_local_dataset():
             else:
                 df = pd.read_excel(file_found)
             
-            # Bersihkan nama kolom menjadi lowercase
             df.columns = [str(c).strip().lower() for c in df.columns]
             
             if "sentiment" in df.columns:
@@ -216,7 +223,7 @@ def load_local_dataset():
         except Exception as e:
             st.error(f"Gagal membaca file {file_found}: {e}")
             
-    # Dummy fallback jika file benar-benar tidak ditemukan
+    # Dummy fallback
     np.random.seed(42)
     topics = ["integrity", "loyalty", "quality", "services_facility", "other"]
     domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com", "cnbcindonesia.com"]
@@ -273,6 +280,35 @@ def apply_clean_white_layout(fig, height=340):
         )
     )
     return fig
+
+def analyze_negative_peak(df):
+    if df.empty or "sentiment" not in df.columns or "news_date" not in df.columns:
+        return None
+    
+    df_neg = df[(df["sentiment"] == "Negative") & (df["news_date"].notna())].copy()
+    if df_neg.empty:
+        return None
+    
+    df_neg_daily = df_neg.groupby(df_neg["news_date"].dt.date).size().reset_index(name="count")
+    df_neg_daily = df_neg_daily.sort_values(by="news_date")
+    
+    peak_row = df_neg_daily.sort_values(by="count", ascending=False).iloc[0]
+    peak_date = peak_row["news_date"]
+    peak_count = peak_row["count"]
+    
+    df_peak_news = df_neg[df_neg["news_date"].dt.date == peak_date]
+    
+    top_cause_topic = df_peak_news["issue_topic"].mode()[0] if "issue_topic" in df_peak_news.columns and not df_peak_news["issue_topic"].empty else "-"
+    sample_summary = df_peak_news["gemini_summary"].iloc[0] if "gemini_summary" in df_peak_news.columns and not df_peak_news.empty else "-"
+    
+    return {
+        "peak_date": peak_date.strftime('%d %B %Y'),
+        "peak_date_raw": peak_date,
+        "peak_count": peak_count,
+        "cause_topic": top_cause_topic,
+        "summary": sample_summary,
+        "daily_trend": df_neg_daily
+    }
 
 
 # ==========================================
@@ -368,12 +404,33 @@ if st.session_state.active_page == "MONITORING":
     with k5:
         st.markdown(f'<div class="metric-card"><div class="metric-label">Top Topic</div><div class="metric-value" style="color:#7c3aed; font-size:1.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{top_topic}">{top_topic}</div><div class="metric-sub" style="color:#7c3aed;">Volume Terbesar</div></div>', unsafe_allow_html=True)
 
+    # --- BANNER DETEKSI PUNCAK SENTIMEN NEGATIF ---
+    peak_info = analyze_negative_peak(df_filtered)
+    if peak_info:
+        st.markdown(f"""
+            <div class="alert-peak-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                    <span style="font-weight:800; font-size:0.95rem; color:#dc2626;">🚨 NEGATIVE SENTIMENT PEAK DETECTED</span>
+                    <span style="background:#fee2e2; color:#b91c1c; padding:3px 10px; border-radius:12px; font-size:0.75rem; font-weight:700;">
+                        Lonjakan: {peak_info['peak_count']} Berita Negatif
+                    </span>
+                </div>
+                <div style="font-size:0.88rem; color:#1e293b; margin-bottom:4px;">
+                    <b>Periode Puncak:</b> <span style="color:#0f172a; font-weight:700;">{peak_info['peak_date']}</span> &nbsp;|&nbsp; 
+                    <b>Faktor Penyebab Utama (Topic):</b> <span style="background:#f1f5f9; border:1px solid #cbd5e1; padding:2px 8px; border-radius:6px; font-weight:700;">{peak_info['cause_topic']}</span>
+                </div>
+                <div style="font-size:0.83rem; color:#475569; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+                    <b>Ringkasan Isu Terkait:</b> "{peak_info['summary']}"
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
     st.write("")
 
-    tab1, tab2, tab3 = st.tabs(["📈 Distribusi Sentiment & Media", "📌 Sebaran Issue Topic", "📰 Gemini AI News Feed"])
+    tab1, tab2, tab3 = st.tabs(["📈 Distribusi Sentiment & Trend Peak", "📌 Sebaran Issue Topic", "📰 Gemini AI News Feed"])
     
     with tab1:
-        c1, c2 = st.columns([1, 1.2])
+        c1, c2 = st.columns([1, 1.4])
         with c1:
             st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Porsi Sentiment</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "sentiment" in df_filtered.columns:
@@ -383,13 +440,38 @@ if st.session_state.active_page == "MONITORING":
                 st.plotly_chart(fig_pie, use_container_width=True)
             
         with c2:
-            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Sentiment Berdasarkan Tier Media</p>", unsafe_allow_html=True)
-            if not df_filtered.empty and "new_tier" in df_filtered.columns and "sentiment" in df_filtered.columns:
-                df_tier_sent = df_filtered.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
-                fig_tier = px.bar(df_tier_sent, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='group', text='count')
-                fig_tier = apply_clean_white_layout(fig_tier, height=330)
-                fig_tier.update_layout(xaxis_title="Tier Media", yaxis_title="Jumlah Berita")
-                st.plotly_chart(fig_tier, use_container_width=True)
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Tren Harian Sentimen Negatif & Titik Puncak</p>", unsafe_allow_html=True)
+            if peak_info and not peak_info["daily_trend"].empty:
+                df_trend = peak_info["daily_trend"]
+                fig_trend = go.Figure()
+                
+                # Garis Tren Harian
+                fig_trend.add_trace(go.Scatter(
+                    x=df_trend["news_date"],
+                    y=df_trend["count"],
+                    mode='lines+markers',
+                    name='Negative News',
+                    line=dict(color='#ef4444', width=2),
+                    fill='tozeroy',
+                    fillcolor='rgba(239, 68, 68, 0.1)'
+                ))
+                
+                # Titik Puncak (Peak Point)
+                fig_trend.add_trace(go.Scatter(
+                    x=[peak_info["peak_date_raw"]],
+                    y=[peak_info["peak_count"]],
+                    mode='markers+text',
+                    name='Peak Point',
+                    text=[f"Peak: {peak_info['peak_count']}"],
+                    textposition="top center",
+                    marker=dict(color='#991b1b', size=12, symbol='circle')
+                ))
+                
+                fig_trend = apply_clean_white_layout(fig_trend, height=330)
+                fig_trend.update_layout(xaxis_title="Tanggal Berita", yaxis_title="Jumlah Berita Negatif")
+                st.plotly_chart(fig_trend, use_container_width=True)
+            else:
+                st.info("Data sentimen negatif belum memiliki tanggal yang valid untuk tren waktu.")
 
     with tab2:
         c_top1, c_top2 = st.columns([1.2, 1])
