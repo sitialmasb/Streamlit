@@ -178,10 +178,7 @@ def load_local_dataset():
     
     # Daftar nama file yang dicari di folder
     candidate_files = [
-        "dataset.csv", "dataset.xlsx",
-        "data.csv", "data.xlsx",
-        "dataset_sentiment.csv", "dataset_sentiment.xlsx",
-        "sentiment.csv", "sentiment.xlsx"
+        "data.xlsx"
     ]
     
     file_found = None
