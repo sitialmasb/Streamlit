@@ -6,10 +6,10 @@ import plotly.graph_objects as go
 import os
 
 # ==========================================
-# 1. KONFIGURASI HALAMAN
+# 1. KONFIGURASI HALAMAN & TEMA TERANG
 # ==========================================
 st.set_page_config(
-    page_title="Pertamina Trust Radar",
+    page_title="SENTIMENT ANALYSIS",
     page_icon="📡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -18,10 +18,10 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "MONITORING"
 
-# Custom CSS Kuat: Menghilangkan Background Hitam & Merah pada Multiselect
+# Custom CSS
 st.markdown("""
 <style>
-    /* 1. Paksa background App & Sidebar */
+    /* 1. Base App & Sidebar Background */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #f8fafc !important;
     }
@@ -37,12 +37,12 @@ st.markdown("""
         gap: 0.35rem !important;
     }
 
-    /* 2. Semua teks wajib gelap */
+    /* 2. Global Text: Hitam Pekat */
     html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong, div {
         color: #0f172a !important;
     }
 
-    /* 3. Label Filter */
+    /* 3. Label Filter & Widget */
     [data-testid="stWidgetLabel"] label, 
     [data-testid="stWidgetLabel"] p,
     .stSelectbox label, 
@@ -52,60 +52,36 @@ st.markdown("""
         font-size: 0.88rem !important;
     }
 
-    /* 4. MENGHILANGKAN KOTAK HITAM PADA MULTISELECT & SELECTBOX */
+    /* 4. Selectbox & Multiselect: Abu-Abu Lembut */
     div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
     div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
     div[data-baseweb="select"] > div,
     div[role="combobox"] {
-        background-color: #f1f5f9 !important; /* Abu-abu lembut */
+        background-color: #f1f5f9 !important;
         border: 1.5px solid #cbd5e1 !important;
         border-radius: 8px !important;
         color: #000000 !important;
     }
 
-    /* 5. MENGHILANGKAN CHIP MERAH: Ubah jadi Abu-abu Bersih dengan teks Hitam */
+    /* 5. Tag/Chip Multiselect */
     div[data-baseweb="select"] span[data-baseweb="tag"],
     span[data-baseweb="tag"] {
-        background-color: #e2e8f0 !important; /* Abu-abu chip */
+        background-color: #e2e8f0 !important;
         border: 1px solid #94a3b8 !important;
         border-radius: 6px !important;
     }
     div[data-baseweb="select"] span[data-baseweb="tag"] span,
     span[data-baseweb="tag"] span {
-        color: #000000 !important; /* Teks chip hitam */
+        color: #000000 !important;
         font-weight: 700 !important;
     }
     div[data-baseweb="select"] span[data-baseweb="tag"] svg,
     span[data-baseweb="tag"] svg {
-        fill: #000000 !important; /* Ikon silang hitam */
+        fill: #000000 !important;
         color: #000000 !important;
     }
 
-    /* Ikon panah dan tombol clear di dalam input */
-    div[data-baseweb="select"] svg {
-        fill: #475569 !important;
-    }
-    div[data-baseweb="select"] input {
-        color: #000000 !important;
-    }
-
-    /* 6. Dropdown Menu Popover */
-    div[data-baseweb="popover"], 
-    div[data-baseweb="popover"] ul,
-    div[data-baseweb="menu"],
-    div[data-baseweb="menu"] li {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-    div[data-baseweb="menu"] li:hover {
-        background-color: #e2e8f0 !important;
-    }
-    div[data-baseweb="menu"] li * {
-        color: #000000 !important;
-        font-weight: 600 !important;
-    }
-
-    /* 7. Metric Cards */
+    /* 6. Metric Cards */
     .metric-card {
         border-radius: 12px;
         padding: 16px 20px;
@@ -132,17 +108,7 @@ st.markdown("""
         font-weight: 700;
     }
 
-    /* 8. Container Card Grafik */
-    .chart-container {
-        background: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 12px;
-        padding: 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        margin-bottom: 16px;
-    }
-
-    /* 9. Tabs Navigasi */
+    /* 7. Tabs Navigasi */
     button[data-baseweb="tab"] {
         color: #475569 !important;
         font-weight: 700 !important;
@@ -152,7 +118,7 @@ st.markdown("""
         border-bottom: 3px solid #2563eb !important;
     }
 
-    /* 10. Dataframe Container */
+    /* 8. Dataframe Container */
     [data-testid="stDataFrame"] {
         background-color: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
@@ -161,7 +127,7 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    /* 11. Tombol Menu Navigasi */
+    /* 9. Tombol Menu Navigasi */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
@@ -362,12 +328,11 @@ if st.session_state.active_page == "MONITORING" and selected_topic and "issue_to
 # 4. HALAMAN 1: MONITORING
 # ==========================================
 if st.session_state.active_page == "MONITORING":
-    # Header Icon Putih Berborder Abu
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
             <div style="background: #ffffff; border: 1.5px solid #cbd5e1; padding: 10px; border-radius: 12px; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">📡</div>
             <div>
-                <h2 style="margin: 0; font-size: 1.6rem; color: #000000; font-weight:800;">PERTAMINA <span style="color:#2563eb; font-style: italic;">TRUSTRADAR</span></h2>
+                <h2 style="margin: 0; font-size: 1.6rem; color: #000000; font-weight:800;">TKB NEWS'S <span style="color:#2563eb; font-style: italic;">SENTIMENT ANALYSIS</span></h2>
                 <span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #334155; font-weight: 700;">SENTIMENT & ISSUE TOPIC MONITORING</span>
             </div>
         </div>
@@ -398,53 +363,45 @@ if st.session_state.active_page == "MONITORING":
     with tab1:
         c1, c2 = st.columns([1, 1.2])
         with c1:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Porsi Sentiment</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Porsi Sentiment</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "sentiment" in df_filtered.columns:
                 fig_pie = px.pie(df_filtered, names='sentiment', hole=0.55, color='sentiment', color_discrete_map=color_map_sentiment)
                 fig_pie.update_traces(textinfo='percent+value')
-                fig_pie = apply_clean_white_layout(fig_pie, height=320)
+                fig_pie = apply_clean_white_layout(fig_pie, height=330)
                 st.plotly_chart(fig_pie, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
             
         with c2:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Sentiment Berdasarkan Tier Media</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Sentiment Berdasarkan Tier Media</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "new_tier" in df_filtered.columns and "sentiment" in df_filtered.columns:
                 df_tier_sent = df_filtered.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
                 fig_tier = px.bar(df_tier_sent, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='group', text='count')
-                fig_tier = apply_clean_white_layout(fig_tier, height=320)
+                fig_tier = apply_clean_white_layout(fig_tier, height=330)
                 fig_tier.update_layout(xaxis_title="Tier Media", yaxis_title="Jumlah Berita")
                 st.plotly_chart(fig_tier, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
     with tab2:
         c_top1, c_top2 = st.columns([1.2, 1])
         with c_top1:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Komposisi Sentiment per Issue Topic</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Komposisi Sentiment per Issue Topic</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "issue_topic" in df_filtered.columns and "sentiment" in df_filtered.columns:
                 df_top_sent = df_filtered.groupby(['issue_topic', 'sentiment']).size().reset_index(name='count')
                 fig_top = px.bar(df_top_sent, y='issue_topic', x='count', color='sentiment', color_discrete_map=color_map_sentiment, orientation='h', barmode='stack')
-                fig_top = apply_clean_white_layout(fig_top, height=330)
+                fig_top = apply_clean_white_layout(fig_top, height=340)
                 fig_top.update_layout(yaxis_title="", xaxis_title="Jumlah Berita")
                 st.plotly_chart(fig_top, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
             
         with c_top2:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Top Domain Media (Volume)</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Top Domain Media (Volume)</p>", unsafe_allow_html=True)
             if not df_filtered.empty and "domain" in df_filtered.columns:
                 top_domains = df_filtered['domain'].value_counts().head(8).reset_index()
                 top_domains.columns = ['Domain', 'Count']
                 fig_domains = px.bar(top_domains, x='Count', y='Domain', orientation='h', color_discrete_sequence=['#2563eb'], text='Count')
-                fig_domains = apply_clean_white_layout(fig_domains, height=330)
+                fig_domains = apply_clean_white_layout(fig_domains, height=340)
                 fig_domains.update_layout(yaxis=dict(autorange="reversed"), yaxis_title="", xaxis_title="Total Berita")
                 st.plotly_chart(fig_domains, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
     with tab3:
-        st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Detail Feed Berita & Ringkasan Gemini AI</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Detail Feed Berita & Ringkasan Gemini AI</p>", unsafe_allow_html=True)
         cols = [c for c in ["news_date", "domain", "new_tier", "issue_topic", "sentiment", "gemini_summary", "news_url"] if c in df_filtered.columns]
         
         col_config = {
@@ -463,7 +420,6 @@ if st.session_state.active_page == "MONITORING":
 # 5. HALAMAN 2: TOPIC DEEP DIVE
 # ==========================================
 elif st.session_state.active_page == "DEEP_DIVE":
-    # Header Icon Putih Berborder Abu
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
             <div style="background: #ffffff; border: 1.5px solid #cbd5e1; padding: 10px; border-radius: 12px; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">🔍</div>
@@ -500,27 +456,23 @@ elif st.session_state.active_page == "DEEP_DIVE":
 
         col_g1, col_g2 = st.columns([1, 1])
         with col_g1:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Proporsi Sentiment: {selected_single_topic}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Proporsi Sentiment: {selected_single_topic}</p>", unsafe_allow_html=True)
             if not df_deep.empty and "sentiment" in df_deep.columns:
                 fig_deep_pie = px.pie(df_deep, names='sentiment', hole=0.5, color='sentiment', color_discrete_map=color_map_sentiment)
                 fig_deep_pie.update_traces(textinfo='percent+value')
-                fig_deep_pie = apply_clean_white_layout(fig_deep_pie, height=300)
+                fig_deep_pie = apply_clean_white_layout(fig_deep_pie, height=310)
                 st.plotly_chart(fig_deep_pie, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
             
         with col_g2:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Sebaran Media Tier: {selected_single_topic}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Sebaran Media Tier: {selected_single_topic}</p>", unsafe_allow_html=True)
             if not df_deep.empty and "new_tier" in df_deep.columns and "sentiment" in df_deep.columns:
                 df_deep_tier = df_deep.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
                 fig_deep_tier = px.bar(df_deep_tier, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='stack', text='count')
-                fig_deep_tier = apply_clean_white_layout(fig_deep_tier, height=300)
+                fig_deep_tier = apply_clean_white_layout(fig_deep_tier, height=310)
                 fig_deep_tier.update_layout(xaxis_title="Tier Media", yaxis_title="Jumlah")
                 st.plotly_chart(fig_deep_tier, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:10px; color:#000;'>Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-weight:700; font-size:1.05rem; margin-bottom:6px; color:#000;'>Daftar Berita & Ringkasan Khusus Topik: '{selected_single_topic}'</p>", unsafe_allow_html=True)
         cols_deep = [c for c in ["news_date", "domain", "new_tier", "sentiment", "gemini_summary", "news_url"] if c in df_deep.columns]
         col_cfg_deep = {
             "gemini_summary": st.column_config.TextColumn("Ringkasan Berita (Gemini Summary)", width="large"),
