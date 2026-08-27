@@ -18,7 +18,7 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "MONITORING"
 
-# Custom CSS
+# Custom CSS: Card Pill Berwarna Sesuai Desain & Filter Horizontal
 st.markdown("""
 <style>
     /* 1. Base App & Sidebar Background */
@@ -49,7 +49,7 @@ st.markdown("""
     .stMultiSelect label {
         color: #000000 !important;
         font-weight: 700 !important;
-        font-size: 0.88rem !important;
+        font-size: 0.85rem !important;
     }
 
     /* 4. Selectbox & Multiselect: Abu-Abu Lembut */
@@ -57,71 +57,133 @@ st.markdown("""
     div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
     div[data-baseweb="select"] > div,
     div[role="combobox"] {
-        background-color: #f1f5f9 !important;
+        background-color: #ffffff !important;
         border: 1.5px solid #cbd5e1 !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         color: #000000 !important;
     }
 
     /* 5. Tag/Chip Multiselect */
     div[data-baseweb="select"] span[data-baseweb="tag"],
     span[data-baseweb="tag"] {
-        background-color: #e2e8f0 !important;
-        border: 1px solid #94a3b8 !important;
+        background-color: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
     }
     div[data-baseweb="select"] span[data-baseweb="tag"] span,
     span[data-baseweb="tag"] span {
-        color: #000000 !important;
+        color: #0f172a !important;
         font-weight: 700 !important;
     }
     div[data-baseweb="select"] span[data-baseweb="tag"] svg,
     span[data-baseweb="tag"] svg {
-        fill: #000000 !important;
-        color: #000000 !important;
+        fill: #475569 !important;
+        color: #475569 !important;
     }
 
-    /* 6. Metric Cards */
-    .metric-card {
-        border-radius: 12px;
-        padding: 16px 20px;
+    /* ========================================================
+       6. WARNA CARD PILL SAMA DENGAN GAMBAR DESAIN CONTOH
+       ======================================================== */
+    .metric-pill-card {
+        border-radius: 26px !important;
+        padding: 22px 24px;
+        min-height: 145px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        transition: transform 0.15s ease-in-out;
+    }
+    .metric-pill-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Card 1: Putih (Total News) */
+    .card-white {
         background: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        margin-bottom: 12px;
+        border: 1.5px solid #e2e8f0;
     }
-    .metric-label {
-        font-size: 0.75rem;
+    .card-white .pill-title {
+        color: #2563eb !important;
         font-weight: 800;
-        color: #334155 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
     }
-    .metric-value {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #000000 !important;
-        margin: 4px 0;
+    .card-white .pill-value {
+        color: #0f172a !important;
     }
-    .metric-sub {
-        font-size: 0.75rem;
-        font-weight: 700;
+    .card-white .pill-sub {
+        color: #10b981 !important;
     }
 
-    /* 7. Alert Box Peak Sentimen Negatif */
+    /* Card 2: Hijau (Positive) */
+    .card-green {
+        background: linear-gradient(135deg, #059669, #10b981) !important;
+        color: #ffffff !important;
+    }
+
+    /* Card 3: Biru (Neutral) */
+    .card-blue {
+        background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important;
+        color: #ffffff !important;
+    }
+
+    /* Card 4: Oranye (Negative) */
+    .card-orange {
+        background: linear-gradient(135deg, #ea580c, #f97316) !important;
+        color: #ffffff !important;
+    }
+
+    /* Card 5: Slate / Dark Grey (Top Topic) */
+    .card-slate {
+        background: linear-gradient(135deg, #475569, #64748b) !important;
+        color: #ffffff !important;
+    }
+
+    .pill-title {
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: rgba(255, 255, 255, 0.95);
+    }
+    .pill-value {
+        font-size: 2.3rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin: 6px 0;
+        color: #ffffff;
+    }
+    .pill-sub {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* In-Page Filter Container Box */
+    .filter-container-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px 20px 10px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+
+    /* Alert Box Peak Sentimen Negatif */
     .alert-peak-box {
         background: #ffffff;
         border-left: 5px solid #dc2626;
         border-top: 1px solid #e2e8f0;
         border-right: 1px solid #e2e8f0;
         border-bottom: 1px solid #e2e8f0;
-        border-radius: 10px;
+        border-radius: 12px;
         padding: 16px 20px;
         margin-bottom: 16px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
-    /* 8. Tabs Navigasi */
+    /* Tabs Navigasi */
     button[data-baseweb="tab"] {
         color: #475569 !important;
         font-weight: 700 !important;
@@ -131,7 +193,7 @@ st.markdown("""
         border-bottom: 3px solid #2563eb !important;
     }
 
-    /* 9. Dataframe Container */
+    /* Dataframe Container */
     [data-testid="stDataFrame"] {
         background-color: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
@@ -140,14 +202,14 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    /* 10. Tombol Menu Navigasi */
+    /* Tombol Menu Navigasi di Sidebar */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
         justify-content: flex-start;
-        border-radius: 8px;
-        padding: 8px 12px;
-        margin-bottom: 2px;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 4px;
         font-weight: 700;
         font-size: 0.82rem;
         border: 1px solid #cbd5e1 !important;
@@ -249,8 +311,8 @@ df_raw, loaded_file_name = load_local_dataset()
 
 color_map_sentiment = {
     'Positive': '#10b981',
-    'Neutral': '#f59e0b',
-    'Negative': '#ef4444'
+    'Neutral': '#3b82f6',
+    'Negative': '#f97316'
 }
 
 def apply_clean_white_layout(fig, height=340):
@@ -312,7 +374,7 @@ def analyze_negative_peak(df):
 
 
 # ==========================================
-# 3. SIDEBAR: MENU & FILTERS
+# 3. SIDEBAR: NAVIGATION MENU SAJA
 # ==========================================
 with st.sidebar:
     st.markdown("<p style='font-size: 0.85rem; font-weight: 800; margin-bottom: 4px; color:#0f172a;'>MENU DASHBOARD</p>", unsafe_allow_html=True)
@@ -337,45 +399,18 @@ with st.sidebar:
         st.session_state.active_page = "DEEP_DIVE"
         st.rerun()
 
+    st.write("")
     if loaded_file_name:
         st.success(f" Terhubung: `{loaded_file_name}`")
     else:
         st.info("💡 Memakai data sampel bawaan.")
-
-    st.markdown("<p style='font-size: 0.85rem; font-weight: 800; margin-top: 10px; margin-bottom: 2px; color:#0f172a;'>🎯 FILTER DATA</p>", unsafe_allow_html=True)
-
-    sent_list = sorted(list(df_raw["sentiment"].dropna().unique())) if "sentiment" in df_raw.columns else []
-    selected_sent = st.multiselect("Sentiment", options=sent_list, default=sent_list)
-
-    tier_list = sorted(list(df_raw["new_tier"].dropna().astype(str).unique())) if "new_tier" in df_raw.columns else []
-    selected_tier = st.multiselect("Tier Media", options=tier_list, default=tier_list)
-
-    domain_list = sorted(list(df_raw["domain"].dropna().astype(str).unique())) if "domain" in df_raw.columns else []
-    selected_domain = st.multiselect("Media Domain", options=domain_list, default=[])
-
-    topic_list = sorted(list(df_raw["issue_topic"].dropna().astype(str).unique())) if "issue_topic" in df_raw.columns else []
-    if st.session_state.active_page == "MONITORING":
-        selected_topic = st.multiselect("Issue Topic", options=topic_list, default=topic_list)
-    else:
-        selected_topic = topic_list
-
-
-# Terapkan Filter
-df_filtered = df_raw.copy()
-if selected_sent and "sentiment" in df_filtered.columns:
-    df_filtered = df_filtered[df_filtered["sentiment"].isin(selected_sent)]
-if selected_tier and "new_tier" in df_filtered.columns:
-    df_filtered = df_filtered[df_filtered["new_tier"].astype(str).isin(selected_tier)]
-if selected_domain and "domain" in df_filtered.columns:
-    df_filtered = df_filtered[df_filtered["domain"].astype(str).isin(selected_domain)]
-if st.session_state.active_page == "MONITORING" and selected_topic and "issue_topic" in df_filtered.columns:
-    df_filtered = df_filtered[df_filtered["issue_topic"].astype(str).isin(selected_topic)]
 
 
 # ==========================================
 # 4. HALAMAN 1: MONITORING
 # ==========================================
 if st.session_state.active_page == "MONITORING":
+    # Header Icon Putih Berborder Abu
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
             <div style="background: #ffffff; border: 1.5px solid #cbd5e1; padding: 10px; border-radius: 12px; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">📡</div>
@@ -386,23 +421,92 @@ if st.session_state.active_page == "MONITORING":
         </div>
     """, unsafe_allow_html=True)
 
+    # --- IN-PAGE FILTER CONTAINER (HORIZONTAL) ---
+    st.markdown('<div class="filter-container-box">', unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.85rem; font-weight: 800; margin-bottom: 6px; color:#0f172a;'>🎯 FILTER DATASET</p>", unsafe_allow_html=True)
+    
+    f1, f2, f3, f4 = st.columns(4)
+    with f1:
+        sent_list = sorted(list(df_raw["sentiment"].dropna().unique())) if "sentiment" in df_raw.columns else []
+        selected_sent = st.multiselect("Sentiment", options=sent_list, default=sent_list, key="mon_sent")
+    with f2:
+        tier_list = sorted(list(df_raw["new_tier"].dropna().astype(str).unique())) if "new_tier" in df_raw.columns else []
+        selected_tier = st.multiselect("Tier Media", options=tier_list, default=tier_list, key="mon_tier")
+    with f3:
+        topic_list = sorted(list(df_raw["issue_topic"].dropna().astype(str).unique())) if "issue_topic" in df_raw.columns else []
+        selected_topic = st.multiselect("Issue Topic", options=topic_list, default=topic_list, key="mon_topic")
+    with f4:
+        domain_list = sorted(list(df_raw["domain"].dropna().astype(str).unique())) if "domain" in df_raw.columns else []
+        selected_domain = st.multiselect("Media Domain", options=domain_list, default=[], key="mon_domain")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Terapkan Filter
+    df_filtered = df_raw.copy()
+    if selected_sent and "sentiment" in df_filtered.columns:
+        df_filtered = df_filtered[df_filtered["sentiment"].isin(selected_sent)]
+    if selected_tier and "new_tier" in df_filtered.columns:
+        df_filtered = df_filtered[df_filtered["new_tier"].astype(str).isin(selected_tier)]
+    if selected_domain and "domain" in df_filtered.columns:
+        df_filtered = df_filtered[df_filtered["domain"].astype(str).isin(selected_domain)]
+    if selected_topic and "issue_topic" in df_filtered.columns:
+        df_filtered = df_filtered[df_filtered["issue_topic"].astype(str).isin(selected_topic)]
+
+    # Hitung Nilai KPI
     total_news = len(df_filtered)
     pos_count = len(df_filtered[df_filtered["sentiment"] == "Positive"]) if "sentiment" in df_filtered.columns else 0
     neu_count = len(df_filtered[df_filtered["sentiment"] == "Neutral"]) if "sentiment" in df_filtered.columns else 0
     neg_count = len(df_filtered[df_filtered["sentiment"] == "Negative"]) if "sentiment" in df_filtered.columns else 0
     top_topic = df_filtered["issue_topic"].mode()[0] if not df_filtered.empty and "issue_topic" in df_filtered.columns else "-"
 
+    # --- BARIS METRIC CARDS WARNA SOLID/GRADIENT MIRIP GAMBAR ---
     k1, k2, k3, k4, k5 = st.columns(5)
+    
     with k1:
-        st.markdown(f'<div class="metric-card"><div class="metric-label">Total News</div><div class="metric-value">{total_news}</div><div class="metric-sub" style="color:#2563eb;">Berita Terdata</div></div>', unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="metric-pill-card card-white">
+                <div class="pill-title">TOTAL NEWS</div>
+                <div class="pill-value">{total_news}</div>
+                <div class="pill-sub">↑ Performance</div>
+            </div>
+        """, unsafe_allow_html=True)
+
     with k2:
-        st.markdown(f'<div class="metric-card"><div class="metric-label">Positive</div><div class="metric-value" style="color:#10b981;">{pos_count}</div><div class="metric-sub" style="color:#10b981;">{(pos_count/total_news*100) if total_news else 0:.1f}%</div></div>', unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="metric-pill-card card-green">
+                <div class="pill-title">POSITIVE</div>
+                <div class="pill-value">{pos_count}</div>
+                <div class="pill-sub">{(pos_count/total_news*100) if total_news else 0:.1f}% DARI TOTAL</div>
+            </div>
+        """, unsafe_allow_html=True)
+
     with k3:
-        st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#d97706;">{neu_count}</div><div class="metric-sub" style="color:#d97706;">{(neu_count/total_news*100) if total_news else 0:.1f}%</div></div>', unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="metric-pill-card card-blue">
+                <div class="pill-title">NEUTRAL</div>
+                <div class="pill-value">{neu_count}</div>
+                <div class="pill-sub">{(neu_count/total_news*100) if total_news else 0:.1f}% DARI TOTAL</div>
+            </div>
+        """, unsafe_allow_html=True)
+
     with k4:
-        st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#dc2626;">{neg_count}</div><div class="metric-sub" style="color:#dc2626;">Perlu Tindakan</div></div>', unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="metric-pill-card card-orange">
+                <div class="pill-title">NEGATIVE</div>
+                <div class="pill-value">{neg_count}</div>
+                <div class="pill-sub">MITIGATION ONGOING</div>
+            </div>
+        """, unsafe_allow_html=True)
+
     with k5:
-        st.markdown(f'<div class="metric-card"><div class="metric-label">Top Topic</div><div class="metric-value" style="color:#7c3aed; font-size:1.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{top_topic}">{top_topic}</div><div class="metric-sub" style="color:#7c3aed;">Volume Terbesar</div></div>', unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="metric-pill-card card-slate">
+                <div class="pill-title">TOP TOPIC</div>
+                <div class="pill-value" style="font-size:1.4rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{top_topic}">{top_topic}</div>
+                <div class="pill-sub">VOLUME TERBESAR</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.write("")
 
     # --- BANNER DETEKSI PUNCAK SENTIMEN NEGATIF ---
     peak_info = analyze_negative_peak(df_filtered)
@@ -445,18 +549,16 @@ if st.session_state.active_page == "MONITORING":
                 df_trend = peak_info["daily_trend"]
                 fig_trend = go.Figure()
                 
-                # Garis Tren Harian
                 fig_trend.add_trace(go.Scatter(
                     x=df_trend["news_date"],
                     y=df_trend["count"],
                     mode='lines+markers',
                     name='Negative News',
-                    line=dict(color='#ef4444', width=2),
+                    line=dict(color='#ea580c', width=2),
                     fill='tozeroy',
-                    fillcolor='rgba(239, 68, 68, 0.1)'
+                    fillcolor='rgba(234, 88, 12, 0.1)'
                 ))
                 
-                # Titik Puncak (Peak Point)
                 fig_trend.add_trace(go.Scatter(
                     x=[peak_info["peak_date_raw"]],
                     y=[peak_info["peak_count"]],
@@ -527,24 +629,59 @@ elif st.session_state.active_page == "DEEP_DIVE":
     available_topics = sorted(list(df_raw["issue_topic"].dropna().astype(str).unique())) if "issue_topic" in df_raw.columns else []
     
     if available_topics:
-        selected_single_topic = st.selectbox("📌 Pilih Topik yang Ingin Dianalisis Secara Mendalam:", options=available_topics)
-        
-        df_deep = df_filtered[df_filtered["issue_topic"] == selected_single_topic]
+        # Filter Box Khusus Halaman Deep Dive
+        st.markdown('<div class="filter-container-box">', unsafe_allow_html=True)
+        col_sel_top, col_sel_tier = st.columns([2, 1])
+        with col_sel_top:
+            selected_single_topic = st.selectbox("📌 Pilih Topik yang Ingin Dianalisis Secara Mendalam:", options=available_topics)
+        with col_sel_tier:
+            tier_list_deep = sorted(list(df_raw["new_tier"].dropna().astype(str).unique())) if "new_tier" in df_raw.columns else []
+            selected_tier_deep = st.multiselect("Filter Tier Media", options=tier_list_deep, default=tier_list_deep)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        df_deep = df_raw[df_raw["issue_topic"] == selected_single_topic].copy()
+        if selected_tier_deep and "new_tier" in df_deep.columns:
+            df_deep = df_deep[df_deep["new_tier"].astype(str).isin(selected_tier_deep)]
         
         deep_total = len(df_deep)
         deep_pos = len(df_deep[df_deep["sentiment"] == "Positive"]) if "sentiment" in df_deep.columns else 0
         deep_neu = len(df_deep[df_deep["sentiment"] == "Neutral"]) if "sentiment" in df_deep.columns else 0
         deep_neg = len(df_deep[df_deep["sentiment"] == "Negative"]) if "sentiment" in df_deep.columns else 0
 
+        # Cards Pill Deep Dive
         d1, d2, d3, d4 = st.columns(4)
         with d1:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Volume Berita Isu</div><div class="metric-value">{deep_total}</div><div class="metric-sub" style="color:#2563eb;">Total Artikel</div></div>', unsafe_allow_html=True)
+            st.markdown(f"""
+                <div class="metric-pill-card card-white">
+                    <div class="pill-title">VOLUME BERITA ISU</div>
+                    <div class="pill-value">{deep_total}</div>
+                    <div class="pill-sub">Total Artikel</div>
+                </div>
+            """, unsafe_allow_html=True)
         with d2:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Positive</div><div class="metric-value" style="color:#10b981;">{deep_pos}</div><div class="metric-sub" style="color:#10b981;">{(deep_pos/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
+            st.markdown(f"""
+                <div class="metric-pill-card card-green">
+                    <div class="pill-title">POSITIVE</div>
+                    <div class="pill-value">{deep_pos}</div>
+                    <div class="pill-sub">{(deep_pos/deep_total*100) if deep_total else 0:.1f}% DARI ISU</div>
+                </div>
+            """, unsafe_allow_html=True)
         with d3:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" style="color:#d97706;">{deep_neu}</div><div class="metric-sub" style="color:#d97706;">{(deep_neu/deep_total*100) if deep_total else 0:.1f}%</div></div>', unsafe_allow_html=True)
+            st.markdown(f"""
+                <div class="metric-pill-card card-blue">
+                    <div class="pill-title">NEUTRAL</div>
+                    <div class="pill-value">{deep_neu}</div>
+                    <div class="pill-sub">{(deep_neu/deep_total*100) if deep_total else 0:.1f}% DARI ISU</div>
+                </div>
+            """, unsafe_allow_html=True)
         with d4:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" style="color:#dc2626;">{deep_neg}</div><div class="metric-sub" style="color:#dc2626;">Perlu Tindakan</div></div>', unsafe_allow_html=True)
+            st.markdown(f"""
+                <div class="metric-pill-card card-orange">
+                    <div class="pill-title">NEGATIVE</div>
+                    <div class="pill-value">{deep_neg}</div>
+                    <div class="pill-sub">{(deep_neg/deep_total*100) if deep_total else 0:.1f}% BUTUH MITIGASI</div>
+                </div>
+            """, unsafe_allow_html=True)
 
         st.write("")
 
