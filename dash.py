@@ -18,7 +18,7 @@ st.set_page_config(
 if "active_page" not in st.session_state:
     st.session_state.active_page = "OVERVIEW"
 
-# Custom CSS: Soft Palette + High Readability Typography
+# Custom CSS: Soft Theme & Muted Filter Tags
 st.markdown("""
 <style>
     /* 1. Base App & Sidebar Background */
@@ -48,7 +48,7 @@ st.markdown("""
         gap: 0.35rem !important;
     }
 
-    /* 2. Global Text: Deep Slate (Jelas & Lembut) */
+    /* 2. Global Text: Deep Slate */
     html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong, div {
         color: #1e293b !important;
     }
@@ -63,7 +63,7 @@ st.markdown("""
         font-size: 0.85rem !important;
     }
 
-    /* 4. Selectbox & Multiselect Input Box (Soft White / Greyish) */
+    /* 4. Selectbox & Multiselect Input Box */
     div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
     div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
     div[data-baseweb="select"] > div,
@@ -74,27 +74,28 @@ st.markdown("""
         color: #1e293b !important;
     }
 
-    /* 5. Tag/Chip Multiselect (Soft Lavender/Slate Tag) */
+    /* 5. Tag/Chip Multiselect: Soft Muted Palette */
     div[data-baseweb="select"] span[data-baseweb="tag"],
-    span[data-baseweb="tag"] {
+    span[data-baseweb="tag"],
+    div[data-baseweb="tag"] {
         background-color: #f1f5f9 !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
     }
     div[data-baseweb="select"] span[data-baseweb="tag"] span,
-    span[data-baseweb="tag"] span {
+    span[data-baseweb="tag"] span,
+    div[data-baseweb="tag"] span {
         color: #1e293b !important;
         font-weight: 600 !important;
     }
     div[data-baseweb="select"] span[data-baseweb="tag"] svg,
-    span[data-baseweb="tag"] svg {
+    span[data-baseweb="tag"] svg,
+    div[data-baseweb="tag"] svg {
         fill: #64748b !important;
         color: #64748b !important;
     }
 
-    /* ========================================================
-       6. SOFT / PASTEL METRIC PILL CARDS
-       ======================================================== */
+    /* 6. Soft / Pastel Metric Pill Cards */
     .metric-pill-card {
         border-radius: 20px !important;
         padding: 20px 22px;
@@ -110,7 +111,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Card 1: Soft Ice Blue (Total News) */
     .card-soft-white {
         background: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
@@ -119,7 +119,6 @@ st.markdown("""
     .card-soft-white .pill-value { color: #0f172a !important; }
     .card-soft-white .pill-sub { color: #0369a1 !important; }
 
-    /* Card 2: Soft Mint Green (Positive) */
     .card-soft-green {
         background: #f0fdf4 !important;
         border: 1px solid #bbf7d0 !important;
@@ -128,7 +127,6 @@ st.markdown("""
     .card-soft-green .pill-value { color: #14532d !important; }
     .card-soft-green .pill-sub { color: #15803d !important; }
 
-    /* Card 3: Soft Sky Blue (Neutral) */
     .card-soft-blue {
         background: #f0f7ff !important;
         border: 1px solid #bfdbfe !important;
@@ -137,7 +135,6 @@ st.markdown("""
     .card-soft-blue .pill-value { color: #1e3a8a !important; }
     .card-soft-blue .pill-sub { color: #2563eb !important; }
 
-    /* Card 4: Soft Warm Peach (Negative) */
     .card-soft-orange {
         background: #fff7ed !important;
         border: 1px solid #fed7aa !important;
@@ -146,7 +143,6 @@ st.markdown("""
     .card-soft-orange .pill-value { color: #7c2d12 !important; }
     .card-soft-orange .pill-sub { color: #c2410c !important; }
 
-    /* Card 5: Soft Slate Grey (Top Topic) */
     .card-soft-slate {
         background: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
@@ -206,7 +202,7 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
 
-    /* 10. Sidebar Buttons (Soft & Flat) */
+    /* 10. Sidebar Buttons */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
@@ -315,9 +311,9 @@ df_raw, loaded_file_name = load_local_dataset()
 
 # Soft Chart Colors
 color_map_sentiment = {
-    'Positive': '#34d399',  # Soft Emerald / Mint
-    'Neutral': '#60a5fa',   # Soft Blue Sky
-    'Negative': '#fb923c'   # Soft Warm Coral
+    'Positive': '#34d399',
+    'Neutral': '#60a5fa',
+    'Negative': '#fb923c'
 }
 
 def apply_clean_white_layout(fig, height=340):
@@ -530,7 +526,7 @@ if st.session_state.active_page == "OVERVIEW":
 
 
 # ==========================================
-# 5. HALAMAN 2: ALERT & PEAK SPIKE (SOFT THEME)
+# 5. HALAMAN 2: ALERT & PEAK SPIKE
 # ==========================================
 elif st.session_state.active_page == "PEAK_ALERT":
     st.markdown("""
@@ -631,7 +627,7 @@ elif st.session_state.active_page == "PEAK_ALERT":
 
 
 # ==========================================
-# 6. HALAMAN 3: TOPIC DEEP DIVE (SOFT THEME)
+# 6. HALAMAN 3: TOPIC DEEP DIVE
 # ==========================================
 elif st.session_state.active_page == "DEEP_DIVE":
     st.markdown("""
