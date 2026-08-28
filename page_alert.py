@@ -1,6 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
-from utils import analyze_negative_peak, apply_clean_white_layout
+from utils import analyze_negative_peak, apply_clean_white_layout, generate_peak_crisis_summary
 
 def render_alert_page(df_raw):
     st.markdown("""
@@ -32,7 +32,6 @@ def render_alert_page(df_raw):
         """, unsafe_allow_html=True)
 
         # --- AI CRISIS SUMMARY WIDGET ---
-        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(f"<p style='font-weight:700; font-size:1.1rem; margin-bottom:6px; color:#1e293b;'>🤖 AI Crisis Root Cause Summary ({peak_data['peak_date']})</p>", unsafe_allow_html=True)
         
         with st.spinner("AI sedang menganalisis berita negatif pada tanggal puncak..."):
