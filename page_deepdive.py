@@ -3,9 +3,11 @@ import plotly.express as px
 from utils import color_map_sentiment, apply_clean_white_layout
 
 def render_deepdive_page(df_raw):
-    st.markdown("""
+    icon_deep = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/dive.png"
+    
+    st.markdown(f"""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-            <div style="background: #f0f7ff; border: 1px solid #bfdbfe; padding: 10px; border-radius: 12px; font-size: 1.3rem;">🔍</div>
+            <img src="{icon_deep}" width="38" style="background: #f0f7ff; border: 1px solid #bfdbfe; padding: 6px; border-radius: 12px;" />
             <div>
                 <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a; font-weight:800;">TOPIC <span style="color:#0284c7; font-style: italic;">DEEP DIVE</span></h2>
                 <span style="font-size: 0.8rem; letter-spacing: 0.1em; color: #64748b; font-weight: 700;">IN-DEPTH SINGLE TOPIC INVESTIGATION & ANALYSIS</span>
