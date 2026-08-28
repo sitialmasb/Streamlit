@@ -418,9 +418,9 @@ with st.sidebar:
     st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; color:#94a3b8; letter-spacing:0.05em;'>DASHBOARD MENU</p>", unsafe_allow_html=True)
     
     # URL Raw GitHub untuk masing-masing icon PNG kamu
-    icon_overview = "https://raw.githubusercontent.com/username/repo/main/sentiment.png"
-    icon_alert = "https://raw.githubusercontent.com/username/repo/main/alert.png"
-    icon_deep = "https://raw.githubusercontent.com/username/repo/main/dive.png"
+    icon_overview = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/sentiment.png"
+    icon_alert = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/alert.png"
+    icon_deep = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/dive.png"
     
     # Menu 1: Sentiment Overview
     is_ov_active = st.session_state.active_page == "OVERVIEW"
