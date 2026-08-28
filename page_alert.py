@@ -3,9 +3,11 @@ import plotly.graph_objects as go
 from utils import analyze_negative_peak, apply_clean_white_layout
 
 def render_alert_page(df_raw):
-    st.markdown("""
+    icon_alert = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/alert.png"
+    
+    st.markdown(f"""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-            <div style="background: #fff7ed; border: 1px solid #fed7aa; padding: 10px; border-radius: 12px; font-size: 1.3rem;">🚨</div>
+            <img src="{icon_alert}" width="38" style="background: #fff7ed; border: 1px solid #fed7aa; padding: 6px; border-radius: 12px;" />
             <div>
                 <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a; font-weight:800;">CRISIS ALERT & <span style="color:#ea580c; font-style: italic;">PEAK ANALYSIS</span></h2>
                 <span style="font-size: 0.8rem; letter-spacing: 0.1em; color: #64748b; font-weight: 700;">NEGATIVE SENTIMENT SPIKES & ROOT CAUSE INVESTIGATION</span>
