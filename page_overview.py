@@ -127,24 +127,14 @@ def render_overview_page(df_raw):
                 st.plotly_chart(fig_tier, use_container_width=True)
 
     elif st.session_state.overview_subtab == "BREAKDOWN":
-        c_top1, c_top2 = st.columns([1.2, 1])
-        with c_top1:
-            st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Sentiment Composition per Issue Topic</p>", unsafe_allow_html=True)
-            if not df_filtered.empty and "issue_topic" in df_filtered.columns and "sentiment" in df_filtered.columns:
-                df_top_sent = df_filtered.groupby(['issue_topic', 'sentiment']).size().reset_index(name='count')
-                fig_top = px.bar(df_top_sent, y='issue_topic', x='count', color='sentiment', color_discrete_map=color_map_sentiment, orientation='h', barmode='stack')
-                fig_top = apply_clean_white_layout(fig_top, height=340)
-                fig_top.update_layout(yaxis_title="", xaxis_title="Number of Articles")
-                st.plotly_chart(fig_top, use_container_width=True)
-        with c_top2:
-            st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Top Media Domains (by Volume)</p>", unsafe_allow_html=True)
-            if not df_filtered.empty and "domain" in df_filtered.columns:
-                top_domains = df_filtered['domain'].value_counts().head(8).reset_index()
-                top_domains.columns = ['Domain', 'Count']
-                fig_domains = px.bar(top_domains, x='Count', y='Domain', orientation='h', color_discrete_sequence=['#60a5fa'], text='Count')
-                fig_domains = apply_clean_white_layout(fig_domains, height=340)
-                fig_domains.update_layout(yaxis=dict(autorange="reversed"), yaxis_title="", xaxis_title="Total Articles")
-                st.plotly_chart(fig_domains, use_container_width=True)
+        # Bagian Top Media Domains dihapus, sehingga grafik Sentiment Composition per Issue Topic menggunakan lebar penuh (full width)
+        st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Sentiment Composition per Issue Topic</p>", unsafe_allow_html=True)
+        if not df_filtered.empty and "issue_topic" in df_filtered.columns and "sentiment" in df_filtered.columns:
+            df_top_sent = df_filtered.groupby(['issue_topic', 'sentiment']).size().reset_index(name='count')
+            fig_top = px.bar(df_top_sent, y='issue_topic', x='count', color='sentiment', color_discrete_map=color_map_sentiment, orientation='h', barmode='stack')
+            fig_top = apply_clean_white_layout(fig_top, height=400)
+            fig_top.update_layout(yaxis_title="", xaxis_title="Number of Articles")
+            st.plotly_chart(fig_top, use_container_width=True)
 
     elif st.session_state.overview_subtab == "FEED":
         st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Detailed News Feed & AI Summary</p>", unsafe_allow_html=True)
