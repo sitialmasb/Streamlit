@@ -1,14 +1,17 @@
 import streamlit as st
 import plotly.express as px
+import plotly.graph_objects as go
 from utils import color_map_sentiment, apply_clean_white_layout
 
 def render_overview_page(df_raw):
-    st.markdown("""
+    icon_overview = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/sentiment.png"
+    
+    st.markdown(f"""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px; font-size: 1.3rem; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">📊</div>
+            <img src="{icon_overview}" width="38" style="background: #f0f7ff; border: 1px solid #bfdbfe; padding: 6px; border-radius: 12px;" />
             <div>
-                <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a; font-weight:800;">TKB NEWS <span style="color:#0284c7; font-style: italic;">OVERVIEW</span></h2>
-                <span style="font-size: 0.8rem; letter-spacing: 0.1em; color: #64748b; font-weight: 700;">GENERAL SENTIMENT & MEDIA PERFORMANCE MONITORING</span>
+                <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a; font-weight:800;">SENTIMENT <span style="color:#0284c7; font-style: italic;">OVERVIEW</span></h2>
+                <span style="font-size: 0.8rem; letter-spacing: 0.1em; color: #64748b; font-weight: 700;">OVERVIEW DASHBOARD & MEDIA SENTIMENT METRICS</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
