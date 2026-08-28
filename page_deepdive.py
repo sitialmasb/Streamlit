@@ -120,4 +120,4 @@ def render_deepdive_page(df_raw):
     else:
         st.warning("Column `issue_topic` not found in the dataset.")
 
-ini deepdive debelumnya
+
