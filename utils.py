@@ -287,7 +287,7 @@ def generate_peak_crisis_summary(df_peak_articles):
         
         # Prompt diperjelas agar outputnya ringkas dan tidak terlalu panjang
         prompt = (
-            "Bertindaklah sebagai analis PR. Berdasarkan ringkasan berita negatif berikut, "
+            "Bertindaklah sebagai analis berita. Berdasarkan ringkasan berita negatif berikut, "
             "buatkan analisis yang sangat ringkas dan padat (maksimal 3 poin utama saja) mengenai akar masalah "
             "dan hal yang harus diwaspadai. Jangan terlalu panjang:\n\n" + combined_texts
         )
