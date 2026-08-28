@@ -412,64 +412,57 @@ def analyze_negative_peak(df):
 
 
 # ==========================================
-# 3. SIDEBAR: NAVIGATION MENU WITH GITHUB ICONS
+# 3. SIDEBAR: NAVIGATION MENU DENGAN ICON GAMBAR
 # ==========================================
 with st.sidebar:
     st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; color:#94a3b8; letter-spacing:0.05em;'>DASHBOARD MENU</p>", unsafe_allow_html=True)
     
-    # Masukkan Raw URL file icon dari GitHub kamu di sini
+    # URL Raw GitHub untuk masing-masing icon PNG kamu
     icon_overview = "https://raw.githubusercontent.com/username/repo/main/sentiment.png"
     icon_alert = "https://raw.githubusercontent.com/username/repo/main/alert.png"
     icon_deep = "https://raw.githubusercontent.com/username/repo/main/dive.png"
-    # Tombol 1: Sentiment Overview
-    btn_overview_label = f"""
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="{icon_overview}" width="20" height="20" style="object-fit: contain;">
-        <div style="text-align: left; line-height: 1.2;">
-            <div style="font-weight: 700; font-size: 0.9rem;">Sentiment Overview</div>
-            <div style="font-weight: 400; font-size: 0.72rem; color: #64748b;">Overview Dashboard</div>
-        </div>
-    </div>
-    """
-    if st.button(btn_overview_label, key="nav_overview", type="primary" if st.session_state.active_page == "OVERVIEW" else "secondary", use_container_width=True):
-        st.session_state.active_page = "OVERVIEW"
-        st.rerun()
+    
+    # Menu 1: Sentiment Overview
+    is_ov_active = st.session_state.active_page == "OVERVIEW"
+    container_ov = st.container(border=True) if is_ov_active else st.container()
+    with container_ov:
+        col_icon_1, col_text_1 = st.columns([1, 4])
+        with col_icon_1:
+            st.image(icon_overview, width=24)
+        with col_text_1:
+            if st.button("Sentiment Overview\nOverview Dashboard", key="nav_overview", use_container_width=True):
+                st.session_state.active_page = "OVERVIEW"
+                st.rerun()
 
-    # Tombol 2: Alert & Peak Spike
-    btn_peak_label = f"""
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="{icon_alert}" width="20" height="20" style="object-fit: contain;">
-        <div style="text-align: left; line-height: 1.2;">
-            <div style="font-weight: 700; font-size: 0.9rem;">Alert & Peak Spike</div>
-            <div style="font-weight: 400; font-size: 0.72rem; color: #64748b;">Alert & Analysis Deep Dive</div>
-        </div>
-    </div>
-    """
-    if st.button(btn_peak_label, key="nav_peak", type="primary" if st.session_state.active_page == "PEAK_ALERT" else "secondary", use_container_width=True):
-        st.session_state.active_page = "PEAK_ALERT"
-        st.rerun()
+    # Menu 2: Alert & Peak Spike
+    is_peak_active = st.session_state.active_page == "PEAK_ALERT"
+    container_peak = st.container(border=True) if is_peak_active else st.container()
+    with container_peak:
+        col_icon_2, col_text_2 = st.columns([1, 4])
+        with col_icon_2:
+            st.image(icon_alert, width=24)
+        with col_text_2:
+            if st.button("Alert & Peak Spike\nAlert & Analysis", key="nav_peak", use_container_width=True):
+                st.session_state.active_page = "PEAK_ALERT"
+                st.rerun()
 
-    # Tombol 3: Topic Deep Dive
-    btn_deep_label = f"""
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="{icon_deep}" width="20" height="20" style="object-fit: contain;">
-        <div style="text-align: left; line-height: 1.2;">
-            <div style="font-weight: 700; font-size: 0.9rem;">Topic Deep Dive</div>
-            <div style="font-weight: 400; font-size: 0.72rem; color: #64748b;">In-Depth Single Topic</div>
-        </div>
-    </div>
-    """
-    if st.button(btn_deep_label, key="nav_deep", type="primary" if st.session_state.active_page == "DEEP_DIVE" else "secondary", use_container_width=True):
-        st.session_state.active_page = "DEEP_DIVE"
-        st.rerun()
+    # Menu 3: Topic Deep Dive
+    is_deep_active = st.session_state.active_page == "DEEP_DIVE"
+    container_deep = st.container(border=True) if is_deep_active else st.container()
+    with container_deep:
+        col_icon_3, col_text_3 = st.columns([1, 4])
+        with col_icon_3:
+            st.image(icon_deep, width=24)
+        with col_text_3:
+            if st.button("Topic Deep Dive\nIn-Depth Single Topic", key="nav_deep", use_container_width=True):
+                st.session_state.active_page = "DEEP_DIVE"
+                st.rerun()
 
     st.write("")
     if loaded_file_name:
         st.success(f" Connected: `{loaded_file_name}`")
     else:
         st.info("💡 Using built-in sample data.")
-
-
 # ==========================================
 # 4. PAGE 1: SENTIMENT OVERVIEW
 # ==========================================
