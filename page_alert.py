@@ -3,11 +3,9 @@ import plotly.graph_objects as go
 from utils import analyze_negative_peak, apply_clean_white_layout
 
 def render_alert_page(df_raw):
-    icon_alert = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/alert.png"
-    
-    st.markdown(f"""
+    st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-            <img src="{icon_alert}" width="38" style="background: #fff7ed; border: 1px solid #fed7aa; padding: 6px; border-radius: 12px;" />
+            <div style="background: #fff7ed; border: 1px solid #fed7aa; padding: 10px; border-radius: 12px; font-size: 1.3rem;">🚨</div>
             <div>
                 <h2 style="margin: 0; font-size: 1.6rem; color: #0f172a; font-weight:800;">CRISIS ALERT & <span style="color:#ea580c; font-style: italic;">PEAK ANALYSIS</span></h2>
                 <span style="font-size: 0.8rem; letter-spacing: 0.1em; color: #64748b; font-weight: 700;">NEGATIVE SENTIMENT SPIKES & ROOT CAUSE INVESTIGATION</span>
@@ -32,6 +30,24 @@ def render_alert_page(df_raw):
                 </div>
             </div>
         """, unsafe_allow_html=True)
+
+        # --- WIDGET SUMMARY PERISTIWA NEGATIF PADA PEAK DATE ---
+        total_peak_articles = peak_data['peak_count']
+        top_domain = peak_data['peak_articles']['domain'].mode()[0] if "domain" in peak_data['peak_articles'].columns and not peak_data['peak_articles']['domain'].empty else "-"
+        
+        st.markdown(f"""
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 22px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                <div style="font-weight: 800; font-size: 1.05rem; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    📋 Executive Event Summary ({peak_data['peak_date']})
+                </div>
+                <p style="color: #334155; font-size: 0.92rem; line-height: 1.6; margin-bottom: 12px;">
+                    Pada tanggal puncak krisis ini, tercatat lonjakan sebanyak <b>{total_peak_articles} artikel negatif</b>. 
+                    Isu utama berpusat pada topik <b>{peak_data['cause_topic']}</b> dengan penyebaran media terbanyak bersumber dari portal <b>{top_domain}</b>. 
+                    Mitigasi cepat diperlukan untuk meredam eskalasi isu di ruang publik.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        # ------------------------------------------------------
 
         pk1, pk2, pk3 = st.columns(3)
         with pk1:
@@ -89,7 +105,6 @@ def render_alert_page(df_raw):
 
         st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-top:14px; margin-bottom:6px; color:#1e293b;'>Triggering Articles on Peak Date ({peak_data['peak_date']})</p>", unsafe_allow_html=True)
         
-        # --- TAMBAHAN SEARCH BAR DI SINI ---
         col_search_pk, col_dummy_pk = st.columns([2, 1.2])
         with col_search_pk:
             search_keyword_peak = st.text_input(
@@ -106,7 +121,6 @@ def render_alert_page(df_raw):
                 if col in df_table_peak.columns:
                     mask = mask | df_table_peak[col].astype(str).str.lower().str.contains(keyword, na=False)
             df_table_peak = df_table_peak[mask]
-        # ------------------------------------
 
         summary_col_pk = "gemini_summary" if "gemini_summary" in df_table_peak.columns else ("ai_summary" if "ai_summary" in df_table_peak.columns else None)
         base_cols_pk = ["domain", "new_tier", "issue_topic"]
