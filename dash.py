@@ -192,49 +192,53 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(249, 115, 22, 0.04);
     }
 
-    /* 5. Continuous Capsule Rail */
+    /* 5. Horizontal Capsule Rail (Baris Panjang Menyamping) */
     div.capsule-rail-wrapper {
         margin-top: 28px !important;
         margin-bottom: 22px !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(button[key^="pnav_"]) {
-        background: #ffffff !important;
-        border: 1.5px solid #e2e8f0 !important;
-        border-radius: 50px !important;
-        padding: 7px 10px !important;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03) !important;
-        align-items: center !important;
+    div.stHorizontalBlock:has(button[key^="pnav_"]) {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        padding: 8px 12px !important;
+        gap: 8px !important;
         display: flex !important;
+        align-items: center !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
     }
 
     div[data-testid="stHorizontalBlock"] button[key^="pnav_"] {
         background: transparent !important;
-        border: none !important;
+        border: 1px solid transparent !important;
         color: #475569 !important;
         font-weight: 700 !important;
-        font-size: 0.83rem !important;
-        letter-spacing: 0.03em !important;
-        border-radius: 40px !important;
-        padding: 9px 20px !important;
+        font-size: 0.82rem !important;
+        border-radius: 10px !important;
+        padding: 8px 16px !important;
         transition: all 0.2s ease-in-out !important;
+        width: 100% !important;
+        text-align: center !important;
     }
 
     div[data-testid="stHorizontalBlock"] button[key^="pnav_"]:hover {
         background: #f1f5f9 !important;
         color: #0f172a !important;
+        border-color: #cbd5e1 !important;
     }
 
     div[data-testid="stHorizontalBlock"] button[key^="pnav_"][kind="primary"] {
-        background: #00529b !important;
-        color: #ffffff !important;
-        border-radius: 40px !important;
-        box-shadow: 0 4px 10px rgba(0, 82, 155, 0.25) !important;
+        background: #e0f2fe !important;      /* Biru soft */
+        color: #0369a1 !important;           /* Teks biru tua */
+        border: 1px solid #bae6fd !important; /* Border lembut */
+        border-radius: 10px !important;
         font-weight: 800 !important;
+        box-shadow: none !important;
     }
     
     div[data-testid="stHorizontalBlock"] button[key^="pnav_"][kind="primary"] p {
-        color: #ffffff !important;
+        color: #0369a1 !important;
     }
 
     /* 6. Dataframe Container */
@@ -515,9 +519,9 @@ if st.session_state.active_page == "OVERVIEW":
             </div>
         """, unsafe_allow_html=True)
 
-    # --- SEGMENTED CAPSULE RAIL CONTROL ---
+    # --- SEGMENTED CAPSULE RAIL CONTROL (BARIS PANJANG MENYAMPING) ---
     st.markdown('<div class="capsule-rail-wrapper">', unsafe_allow_html=True)
-    p1, p2, p3, p_blank = st.columns([1.8, 1.8, 1.6, 2.8])
+    p1, p2, p3 = st.columns(3)
     with p1:
         if st.button("📊 SENTIMENT DISTRIBUTION", key="pnav_dist", type="primary" if st.session_state.overview_subtab == "DISTRIBUTION" else "secondary", use_container_width=True):
             st.session_state.overview_subtab = "DISTRIBUTION"
