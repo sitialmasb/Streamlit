@@ -256,7 +256,7 @@ from openai import OpenAI
 def generate_peak_crisis_summary(df_peak_articles):
     """
     Merangkum artikel negatif pada peak date menggunakan OpenRouter API.
-    Dibatasi maksimal 2 poin saja agar tidak terpotong.
+    Format output menggunakan tag HTML agar bersih tanpa nomor dan tanpa simbol bintang.
     """
     if df_peak_articles.empty:
         return "Tidak ada data artikel yang cukup untuk diringkas."
@@ -285,26 +285,23 @@ def generate_peak_crisis_summary(df_peak_articles):
         summary_col = "gemini_summary" if "gemini_summary" in df_peak_articles.columns else ("ai_summary" if "ai_summary" in df_peak_articles.columns else "domain")
         combined_texts = " - ".join(df_peak_articles[summary_col].dropna().astype(str).tolist()[:8])
         
-        # Instruksi diperketat: Wajib hanya 2 poin agar muat dan tidak terpotong
+        # Instruksi diperketat agar menggunakan tag HTML <b> dan paragraf tanpa nomor
         prompt = (
             "Bertindaklah sebagai analis PR. Berdasarkan ringkasan berita negatif berikut, "
-            "buatkan ringkasan super singkat yang HANYA TERDIRI DARI 2 POIN UTAMA saja "
-            "mengenai akar masalah dan peringatannya. Jangan buat teks yang panjang:\n\n" + combined_texts
+            "buatkan ringkasan super singkat dalam 2 paragraf terpisah tanpa nomor atau bullet point. "
+            "Gunakan tag HTML <b>Akar Masalah:</b> di awal paragraf pertama dan <b>Peringatan:</b> di awal paragraf kedua:\n\n" + combined_texts
         )
         
         response = client.chat.completions.create(
             model="microsoft/phi-4",
             messages=[
-                {"role": "system", "content": "Anda adalah asisten AI yang membuat ringkasan berita sangat singkat, padat, wajib maksimal 2 poin, dan tidak boleh terpotong."},
+                {"role": "system", "content": "Anda adalah asisten AI yang membuat ringkasan berita sangat singkat dalam bentuk paragraf bersih menggunakan tag HTML <b>, tanpa nomor, dan tanpa simbol markdown bintang."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=350
+            max_tokens=300
         )
         
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Gagal menghasilkan ringkasan AI: {str(e)}"
         return response.choices[0].message.content
     except Exception as e:
         return f"Gagal menghasilkan ringkasan AI: {str(e)}"
