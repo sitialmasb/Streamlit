@@ -21,6 +21,35 @@ load_custom_css()
 # Load Dataset
 df_raw, loaded_file_name = load_local_dataset()
 
+# Tambahan CSS khusus untuk sidebar menu custom agar mirip gambar referensi
+st.sidebar.markdown("""
+    <style>
+        .custom-nav-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background-color: transparent;
+            border: 1px solid transparent;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none !important;
+        }
+        .custom-nav-btn:hover {
+            background-color: #f1f5f9;
+        }
+        .custom-nav-active {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border-left: 4px solid #3b82f6 !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # 2. Sidebar Navigation Menu
 with st.sidebar:
     st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; color:#94a3b8; letter-spacing:0.05em;'>DASHBOARD MENU</p>", unsafe_allow_html=True)
@@ -29,44 +58,25 @@ with st.sidebar:
     icon_alert = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/alert.png"
     icon_deep = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/dive.png"
     
-    # Menu 1: Sentiment Overview
-    is_ov_active = st.session_state.active_page == "OVERVIEW"
-    container_ov = st.container(border=True) if is_ov_active else st.container()
-    with container_ov:
-        col_icon_1, col_text_1 = st.columns([0.8, 4.2])
-        with col_icon_1:
-            st.image(icon_overview, width=22)
-        with col_text_1:
-            # Menggunakan format HTML di dalam label tombol agar ada teks utama dan sub-teks di bawahnya
-            btn_label_1 = "Sentiment Overview\n<span style='font-size:0.72rem; color:#64748b; font-weight:normal;'>Summary Dashboard</span>"
-            if st.button(btn_label_1, key="nav_overview", use_container_width=True):
-                st.session_state.active_page = "OVERVIEW"
-                st.rerun()
+    # Data menu
+    menus = [
+        {"id": "OVERVIEW", "icon": icon_overview, "title": "Sentiment Overview", "subtitle": "Summary Dashboard"},
+        {"id": "PEAK_ALERT", "icon": icon_alert, "title": "Crisis Alert & Peak", "subtitle": "Signal and Follow Up"},
+        {"id": "DEEP_DIVE", "icon": icon_deep, "title": "Topic Deep Dive", "subtitle": "Explore Deep Insights"}
+    ]
 
-    # Menu 2: Alert & Peak Spike
-    is_peak_active = st.session_state.active_page == "PEAK_ALERT"
-    container_peak = st.container(border=True) if is_peak_active else st.container()
-    with container_peak:
-        col_icon_2, col_text_2 = st.columns([0.8, 4.2])
-        with col_icon_2:
-            st.image(icon_alert, width=22)
-        with col_text_2:
-            btn_label_2 = "Crisis Alert & Peak\n<span style='font-size:0.72rem; color:#64748b; font-weight:normal;'>Signal and Follow Up</span>"
-            if st.button(btn_label_2, key="nav_peak", use_container_width=True):
-                st.session_state.active_page = "PEAK_ALERT"
-                st.rerun()
-
-    # Menu 3: Topic Deep Dive
-    is_deep_active = st.session_state.active_page == "DEEP_DIVE"
-    container_deep = st.container(border=True) if is_deep_active else st.container()
-    with container_deep:
-        col_icon_3, col_text_3 = st.columns([0.8, 4.2])
-        with col_icon_3:
-            st.image(icon_deep, width=22)
-        with col_text_3:
-            btn_label_3 = "Topic Deep Dive\n<span style='font-size:0.72rem; color:#64748b; font-weight:normal;'>Explore Deep Insights</span>"
-            if st.button(btn_label_3, key="nav_deep", use_container_width=True):
-                st.session_state.active_page = "DEEP_DIVE"
+    for m in menus:
+        is_active = st.session_state.active_page == m["id"]
+        active_cls = "custom-nav-active" if is_active else ""
+        
+        # Membuat layout baris menggunakan kolom Streamlit
+        col_ico, col_txt = st.columns([0.2, 0.8])
+        with col_ico:
+            st.image(m["icon"], width=22)
+        with col_txt:
+            # Menggunakan tombol asli Streamlit dengan teks bersih tanpa tag HTML
+            if st.button(f"{m['title']}\n{m['subtitle']}", key=f"nav_{m['id']}", use_container_width=True):
+                st.session_state.active_page = m["id"]
                 st.rerun()
 
     st.write("")
