@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image
 from utils import load_custom_css, load_local_dataset
 from page_overview import render_overview_page
 from page_alert import render_alert_page
@@ -25,9 +26,9 @@ df_raw, loaded_file_name = load_local_dataset()
 with st.sidebar:
     st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; color:#94a3b8; letter-spacing:0.05em;'>DASHBOARD MENU</p>", unsafe_allow_html=True)
     
-    icon_overview = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/sentiment.png"
-    icon_alert = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/alert.png"
-    icon_deep = "https://raw.githubusercontent.com/sitialmasb/Streamlit/main/dive.png"
+    icon_overview = Image.open("sentiment.png")
+    icon_alert = Image.open("alert.png")
+    icon_deep = Image.open("dive.png")
     
     # Menu 1: Sentiment Overview
     is_ov_active = st.session_state.active_page == "OVERVIEW"
