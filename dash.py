@@ -229,9 +229,9 @@ st.markdown("""
     }
 
     div[data-testid="stHorizontalBlock"] button[key^="pnav_"][kind="primary"] {
-        background: #e0f2fe !important;      /* Biru soft */
-        color: #0369a1 !important;           /* Teks biru tua */
-        border: 1px solid #bae6fd !important; /* Border lembut */
+        background: #e0f2fe !important;
+        color: #0369a1 !important;
+        border: 1px solid #bae6fd !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
         box-shadow: none !important;
@@ -250,30 +250,37 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
 
-    /* 7. Sidebar Buttons */
+    /* 7. Sidebar Navigation Style (Clean & Modern like Reference) */
     section[data-testid="stSidebar"] div.stButton > button {
         width: 100%;
         text-align: left;
         justify-content: flex-start;
-        border-radius: 10px;
-        padding: 10px 14px;
-        margin-bottom: 4px;
-        font-weight: 700;
-        font-size: 0.82rem;
-        border: 1px solid #e2e8f0 !important;
-        background-color: #f8fafc !important;
-        color: #334155 !important;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 1px solid transparent !important;
+        background-color: transparent !important;
+        color: #475569 !important;
+        box-shadow: none !important;
     }
+    
     section[data-testid="stSidebar"] div.stButton > button:hover {
         background-color: #f1f5f9 !important;
-        border-color: #cbd5e1 !important;
         color: #0f172a !important;
     }
+    
     section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {
-        background-color: #f0f9ff !important;
-        color: #0369a1 !important;
-        border-color: #bae6fd !important;
-        font-weight: 800 !important;
+        background-color: #eff6ff !important;
+        color: #1d4ed8 !important;
+        border: 1px solid #dbeafe !important;
+        border-left: 5px solid #2563eb !important;
+        font-weight: 700 !important;
+    }
+    
+    section[data-testid="stSidebar"] div.stButton > button[kind="primary"] p {
+        color: #1d4ed8 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -357,7 +364,6 @@ def load_local_dataset():
 
 df_raw, loaded_file_name = load_local_dataset()
 
-# Soft Chart Colors
 color_map_sentiment = {
     'Positive': '#34d399',
     'Neutral': '#60a5fa',
@@ -409,17 +415,17 @@ def analyze_negative_peak(df):
 # 3. SIDEBAR: NAVIGATION MENU
 # ==========================================
 with st.sidebar:
-    st.markdown("<p style='font-size: 0.85rem; font-weight: 800; margin-bottom: 6px; color:#334155;'>DASHBOARD MENU</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; color:#94a3b8; letter-spacing:0.05em;'>DASHBOARD MENU</p>", unsafe_allow_html=True)
     
-    if st.button("📊 SENTIMENT OVERVIEW", key="nav_overview", type="primary" if st.session_state.active_page == "OVERVIEW" else "secondary", use_container_width=True):
+    if st.button("📊  Sentiment Overview\nOverview Dashboard", key="nav_overview", type="primary" if st.session_state.active_page == "OVERVIEW" else "secondary", use_container_width=True):
         st.session_state.active_page = "OVERVIEW"
         st.rerun()
 
-    if st.button("🚨 ALERT & PEAK SPIKE", key="nav_peak", type="primary" if st.session_state.active_page == "PEAK_ALERT" else "secondary", use_container_width=True):
+    if st.button("🚨  Alert & Peak Spike\nAlert & Analysis Deep Dive", key="nav_peak", type="primary" if st.session_state.active_page == "PEAK_ALERT" else "secondary", use_container_width=True):
         st.session_state.active_page = "PEAK_ALERT"
         st.rerun()
 
-    if st.button("🔍 TOPIC DEEP DIVE", key="nav_deep", type="primary" if st.session_state.active_page == "DEEP_DIVE" else "secondary", use_container_width=True):
+    if st.button("🔍  Topic Deep Dive\nIn-Depth Single Topic", key="nav_deep", type="primary" if st.session_state.active_page == "DEEP_DIVE" else "secondary", use_container_width=True):
         st.session_state.active_page = "DEEP_DIVE"
         st.rerun()
 
@@ -483,7 +489,7 @@ if st.session_state.active_page == "OVERVIEW":
             <div class="metric-pill-card card-soft-white">
                 <div class="pill-title">TOTAL NEWS</div>
                 <div class="pill-value">{total_news}</div>
-                <div class="pill-sub">↑ Performance</div>
+                <div class="pill-sub">ALL ARTICLES</div>
             </div>
         """, unsafe_allow_html=True)
     with k2:
@@ -519,7 +525,7 @@ if st.session_state.active_page == "OVERVIEW":
             </div>
         """, unsafe_allow_html=True)
 
-    # --- SEGMENTED CAPSULE RAIL CONTROL (BARIS PANJANG MENYAMPING) ---
+    # --- SEGMENTED CAPSULE RAIL CONTROL ---
     st.markdown('<div class="capsule-rail-wrapper">', unsafe_allow_html=True)
     p1, p2, p3 = st.columns(3)
     with p1:
@@ -536,7 +542,6 @@ if st.session_state.active_page == "OVERVIEW":
             st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Sub-tab Content
     if st.session_state.overview_subtab == "DISTRIBUTION":
         c1, c2 = st.columns([1, 1.4])
         with c1:
@@ -757,7 +762,6 @@ elif st.session_state.active_page == "DEEP_DIVE":
         deep_neu = len(df_deep[df_deep["sentiment"] == "Neutral"]) if "sentiment" in df_deep.columns else 0
         deep_neg = len(df_deep[df_deep["sentiment"] == "Negative"]) if "sentiment" in df_deep.columns else 0
 
-        # Soft Cards Deep Dive
         d1, d2, d3, d4 = st.columns(4)
         with d1:
             st.markdown(f"""
@@ -812,7 +816,6 @@ elif st.session_state.active_page == "DEEP_DIVE":
 
         st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Article List & AI Summary for Topic: '{selected_single_topic}'</p>", unsafe_allow_html=True)
         
-        # Filter Sentimen Khusus Tabel Deep Dive
         col_dt_title, col_dt_filter = st.columns([2, 1.2])
         with col_dt_filter:
             tbl_sent_choice_deep = st.selectbox(
