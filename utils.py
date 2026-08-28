@@ -256,7 +256,7 @@ from openai import OpenAI
 def generate_peak_crisis_summary(df_peak_articles):
     """
     Merangkum artikel negatif pada peak date menggunakan OpenRouter API.
-    max_tokens dinaikkan agar teks tidak terpotong.
+    Prompt dibuat lebih singkat dan padat agar tidak terpotong.
     """
     if df_peak_articles.empty:
         return "Tidak ada data artikel yang cukup untuk diringkas."
@@ -283,24 +283,25 @@ def generate_peak_crisis_summary(df_peak_articles):
         )
         
         summary_col = "gemini_summary" if "gemini_summary" in df_peak_articles.columns else ("ai_summary" if "ai_summary" in df_peak_articles.columns else "domain")
-        combined_texts = " - ".join(df_peak_articles[summary_col].dropna().astype(str).tolist()[:15])
+        combined_texts = " - ".join(df_peak_articles[summary_col].dropna().astype(str).tolist()[:10])
         
+        # Prompt diperjelas agar outputnya ringkas dan tidak terlalu panjang
         prompt = (
-            "Bertindaklah sebagai analis media PR (Public Relations). Berdasarkan ringkasan berita negatif berikut, "
-            "buatkan analisis terstruktur mengenai akar masalah (root cause) utama dari krisis ini "
-            "serta poin-poin penting yang harus diwaspadai:\n\n" + combined_texts
+            "Bertindaklah sebagai analis PR. Berdasarkan ringkasan berita negatif berikut, "
+            "buatkan analisis yang sangat ringkas dan padat (maksimal 3 poin utama saja) mengenai akar masalah "
+            "dan hal yang harus diwaspadai. Jangan terlalu panjang:\n\n" + combined_texts
         )
         
         response = client.chat.completions.create(
             model="microsoft/phi-4",
             messages=[
-                {"role": "system", "content": "Anda adalah asisten AI yang bertugas membuat ringkasan berita secara ringkas dan akurat."},
+                {"role": "system", "content": "Anda adalah asisten AI yang bertugas membuat ringkasan berita secara sangat ringkas, padat, dan tidak terpotong."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=400  # Ditingkatkan dari 150 ke 400 agar tidak terpotong
+            max_tokens=300  # Batas token disesuaikan dengan teks yang lebih pendek
         )
         
         return response.choices[0].message.content
     except Exception as e:
-        return f"Gagal menghasilkan ringkasan AI: {str(e)}"       # --------------------------------
+        return f"Gagal menghasilkan ringkasan AI: {str(e)}"
