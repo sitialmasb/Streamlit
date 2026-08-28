@@ -31,23 +31,19 @@ def render_alert_page(df_raw):
             </div>
         """, unsafe_allow_html=True)
 
-        # --- WIDGET SUMMARY PERISTIWA NEGATIF PADA PEAK DATE ---
-        total_peak_articles = peak_data['peak_count']
-        top_domain = peak_data['peak_articles']['domain'].mode()[0] if "domain" in peak_data['peak_articles'].columns and not peak_data['peak_articles']['domain'].empty else "-"
+        # --- AI CRISIS SUMMARY WIDGET ---
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-weight:700; font-size:1.1rem; margin-bottom:6px; color:#1e293b;'>🤖 AI Crisis Root Cause Summary ({peak_data['peak_date']})</p>", unsafe_allow_html=True)
         
+        with st.spinner("AI sedang menganalisis berita negatif pada tanggal puncak..."):
+            ai_summary_text = generate_peak_crisis_summary(peak_data['peak_articles'])
+            
         st.markdown(f"""
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 22px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                <div style="font-weight: 800; font-size: 1.05rem; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                    📋 Executive Event Summary ({peak_data['peak_date']})
-                </div>
-                <p style="color: #334155; font-size: 0.92rem; line-height: 1.6; margin-bottom: 12px;">
-                    Pada tanggal puncak krisis ini, tercatat lonjakan sebanyak <b>{total_peak_articles} artikel negatif</b>. 
-                    Isu utama berpusat pada topik <b>{peak_data['cause_topic']}</b> dengan penyebaran media terbanyak bersumber dari portal <b>{top_domain}</b>. 
-                    Mitigasi cepat diperlukan untuk meredam eskalasi isu di ruang publik.
-                </p>
+            <div style="background: #f8fafc; border-left: 4px solid #ea580c; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 0 8px 8px 0; font-size: 0.92rem; color: #334155; line-height: 1.6; margin-bottom: 20px;">
+                {ai_summary_text}
             </div>
         """, unsafe_allow_html=True)
-        # ------------------------------------------------------
+        # --------------------------------
 
         pk1, pk2, pk3 = st.columns(3)
         with pk1:
