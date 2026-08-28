@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
+from openai import OpenAI
 
 def load_custom_css():
     st.markdown("""
@@ -250,3 +251,56 @@ def analyze_negative_peak(df):
         "peak_articles": df_peak_news,
         "daily_trend": df_neg_daily
     }
+def generate_peak_crisis_summary(df_peak_articles):
+    """
+    Merangkum artikel negatif pada peak date menggunakan OpenRouter API.
+    Mengambil API Key dari st.secrets atau environment variable.
+    """
+    if df_peak_articles.empty:
+        return "Tidak ada data artikel yang cukup untuk diringkas."
+    
+    # Ambil API key dari st.secrets atau environment variables
+    api_key = None
+    try:
+        if "OPENROUTER_API_KEY" in st.secrets:
+            api_key = st.secrets["OPENROUTER_API_KEY"]
+        elif "GEMINI_API_KEY" in st.secrets:
+            api_key = st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        pass
+        
+    if not api_key:
+        api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("GEMINI_API_KEY")
+        
+    if not api_key:
+        return "⚠️ **API Key belum dikonfigurasi.** Tambahkan `OPENROUTER_API_KEY` ke Streamlit Secrets atau environment variable agar fitur AI Summary dapat berjalan."
+    
+    try:
+        # Inisialisasi client OpenAI dengan base_url OpenRouter
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://openrouter.ai/api/v1"
+        )
+        
+        summary_col = "gemini_summary" if "gemini_summary" in df_peak_articles.columns else ("ai_summary" if "ai_summary" in df_peak_articles.columns else "domain")
+        combined_texts = " - ".join(df_peak_articles[summary_col].dropna().astype(str).tolist()[:15])
+        
+        prompt = (
+            "Bertindaklah sebagai analis media PR (Public Relations). Berdasarkan ringkasan berita negatif berikut, "
+            "buatkan analisis singkat dalam 2-3 kalimat mengenai akar masalah (root cause) utama dari krisis ini "
+            "serta poin-poin penting yang harus diwaspadai:\n\n" + combined_texts
+        )
+        
+        response = client.chat.completions.create(
+            model="microsoft/phi-4",  # Kamu bisa ubah modelnya sesuai keinginan di OpenRouter
+            messages=[
+                {"role": "system", "content": "Anda adalah asisten AI yang bertugas membuat ringkasan berita secara ringkas dan akurat."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_tokens=150
+        )
+        
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Gagal menghasilkan ringkasan AI via OpenRouter: {str(e)}"
