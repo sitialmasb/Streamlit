@@ -418,10 +418,9 @@ with st.sidebar:
     st.markdown("<p style='font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; color:#94a3b8; letter-spacing:0.05em;'>DASHBOARD MENU</p>", unsafe_allow_html=True)
     
     # Masukkan Raw URL file icon dari GitHub kamu di sini
-    icon_overview = "https://raw.githubusercontent.com/username/repo/main/path/icon-overview.svg"
-    icon_alert = "https://raw.githubusercontent.com/username/repo/main/path/icon-alert.svg"
-    icon_deep = "https://raw.githubusercontent.com/username/repo/main/path/icon-deep.svg"
-    
+    icon_overview = "https://raw.githubusercontent.com/username/repo/main/sentiment.png"
+    icon_alert = "https://raw.githubusercontent.com/username/repo/main/alert.png"
+    icon_deep = "https://raw.githubusercontent.com/username/repo/main/dive.png"
     # Tombol 1: Sentiment Overview
     btn_overview_label = f"""
     <div style="display: flex; align-items: center; gap: 10px;">
