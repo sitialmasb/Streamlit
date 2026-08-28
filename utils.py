@@ -256,6 +256,7 @@ from openai import OpenAI
 def generate_peak_crisis_summary(df_peak_articles):
     """
     Merangkum artikel negatif pada peak date menggunakan OpenRouter API.
+    max_tokens dinaikkan agar teks tidak terpotong.
     """
     if df_peak_articles.empty:
         return "Tidak ada data artikel yang cukup untuk diringkas."
@@ -264,11 +265,13 @@ def generate_peak_crisis_summary(df_peak_articles):
     try:
         if "OPENROUTER_API_KEY" in st.secrets:
             api_key = st.secrets["OPENROUTER_API_KEY"]
+        elif "GEMINI_API_KEY" in st.secrets:
+            api_key = st.secrets["GEMINI_API_KEY"]
     except Exception:
         pass
         
     if not api_key:
-        api_key = os.getenv("OPENROUTER_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("GEMINI_API_KEY")
         
     if not api_key:
         return "⚠️ **API Key belum dikonfigurasi.** Tambahkan `OPENROUTER_API_KEY` ke Streamlit Secrets atau environment variable."
@@ -284,7 +287,7 @@ def generate_peak_crisis_summary(df_peak_articles):
         
         prompt = (
             "Bertindaklah sebagai analis media PR (Public Relations). Berdasarkan ringkasan berita negatif berikut, "
-            "buatkan analisis singkat dalam 2-3 kalimat mengenai akar masalah (root cause) utama dari krisis ini "
+            "buatkan analisis terstruktur mengenai akar masalah (root cause) utama dari krisis ini "
             "serta poin-poin penting yang harus diwaspadai:\n\n" + combined_texts
         )
         
@@ -295,9 +298,26 @@ def generate_peak_crisis_summary(df_peak_articles):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=150
+            max_tokens=400  # Ditingkatkan dari 150 ke 400 agar tidak terpotong
         )
         
         return response.choices[0].message.content
     except Exception as e:
         return f"Gagal menghasilkan ringkasan AI: {str(e)}"
+Lalu, di file page_alert.py, ubah cara menampilkan hasilnya dari st.markdown ber-tag HTML khusus menjadi st.markdown(ai_summary_text) biasa agar teks hasil format markdown dari AI (seperti bullet points * dan bold **) dirender dengan sempurna oleh Streamlit:
+
+Python
+        # --- AI CRISIS SUMMARY WIDGET ---
+        st.markdown(f"<p style='font-weight:700; font-size:1.1rem; margin-bottom:6px; color:#1e293b;'>🤖 AI Crisis Root Cause Summary ({peak_data['peak_date']})</p>", unsafe_allow_html=True)
+        
+        with st.spinner("AI sedang menganalisis berita negatif pada tanggal puncak..."):
+            ai_summary_text = generate_peak_crisis_summary(peak_data['peak_articles'])
+            
+        # Gunakan wadah container/markdown Streamlit biasa agar list markdown terbaca sempurna
+        with st.container():
+            st.markdown(f"""
+                <div style="background: #f8fafc; border-left: 4px solid #ea580c; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 0 8px 8px 0; color: #334155; margin-bottom: 20px;">
+                {ai_summary_text}
+                </div>
+            """, unsafe_allow_html=True)
+        # --------------------------------
