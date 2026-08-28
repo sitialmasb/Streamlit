@@ -33,11 +33,11 @@ with st.sidebar:
     is_ov_active = st.session_state.active_page == "OVERVIEW"
     container_ov = st.container(border=True) if is_ov_active else st.container()
     with container_ov:
-        col_icon_1, col_text_1 = st.columns([1, 4])
+        col_icon_1, col_text_1 = st.columns([0.8, 4.2])
         with col_icon_1:
-            st.image(icon_overview, width=24)
+            st.image(icon_overview, width=22)
         with col_text_1:
-            if st.button("Sentiment Overview\nOverview Dashboard", key="nav_overview", use_container_width=True):
+            if st.button("Sentiment Overview", key="nav_overview", use_container_width=True):
                 st.session_state.active_page = "OVERVIEW"
                 st.rerun()
 
@@ -45,11 +45,11 @@ with st.sidebar:
     is_peak_active = st.session_state.active_page == "PEAK_ALERT"
     container_peak = st.container(border=True) if is_peak_active else st.container()
     with container_peak:
-        col_icon_2, col_text_2 = st.columns([1, 4])
+        col_icon_2, col_text_2 = st.columns([0.8, 4.2])
         with col_icon_2:
-            st.image(icon_alert, width=24)
+            st.image(icon_alert, width=22)
         with col_text_2:
-            if st.button("Alert & Peak Spike\nAlert & Analysis", key="nav_peak", use_container_width=True):
+            if st.button("Crisis Alert & Peak", key="nav_peak", use_container_width=True):
                 st.session_state.active_page = "PEAK_ALERT"
                 st.rerun()
 
@@ -57,11 +57,11 @@ with st.sidebar:
     is_deep_active = st.session_state.active_page == "DEEP_DIVE"
     container_deep = st.container(border=True) if is_deep_active else st.container()
     with container_deep:
-        col_icon_3, col_text_3 = st.columns([1, 4])
+        col_icon_3, col_text_3 = st.columns([0.8, 4.2])
         with col_icon_3:
-            st.image(icon_deep, width=24)
+            st.image(icon_deep, width=22)
         with col_text_3:
-            if st.button("Topic Deep Dive\nIn-Depth Single Topic", key="nav_deep", use_container_width=True):
+            if st.button("Topic Deep Dive", key="nav_deep", use_container_width=True):
                 st.session_state.active_page = "DEEP_DIVE"
                 st.rerun()
 
