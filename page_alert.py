@@ -37,11 +37,13 @@ def render_alert_page(df_raw):
         with st.spinner("AI sedang menganalisis berita negatif pada tanggal puncak..."):
             ai_summary_text = generate_peak_crisis_summary(peak_data['peak_articles'])
             
-        st.markdown(f"""
-            <div style="background: #f8fafc; border-left: 4px solid #ea580c; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 0 8px 8px 0; font-size: 0.92rem; color: #334155; line-height: 1.6; margin-bottom: 20px;">
+        # Gunakan wadah container/markdown Streamlit biasa agar list markdown terbaca sempurna
+        with st.container():
+            st.markdown(f"""
+                <div style="background: #f8fafc; border-left: 4px solid #ea580c; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 0 8px 8px 0; color: #334155; margin-bottom: 20px;">
                 {ai_summary_text}
-            </div>
-        """, unsafe_allow_html=True)
+                </div>
+            """, unsafe_allow_html=True)
         # --------------------------------
 
         pk1, pk2, pk3 = st.columns(3)
