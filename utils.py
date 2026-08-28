@@ -256,7 +256,7 @@ from openai import OpenAI
 def generate_peak_crisis_summary(df_peak_articles):
     """
     Merangkum artikel negatif pada peak date menggunakan OpenRouter API.
-    Prompt dibuat lebih singkat dan padat agar tidak terpotong.
+    Dibatasi maksimal 2 poin saja agar tidak terpotong.
     """
     if df_peak_articles.empty:
         return "Tidak ada data artikel yang cukup untuk diringkas."
@@ -271,7 +271,7 @@ def generate_peak_crisis_summary(df_peak_articles):
         pass
         
     if not api_key:
-        api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("GOOGLE_API_KEY")
         
     if not api_key:
         return "⚠️ **API Key belum dikonfigurasi.** Tambahkan `OPENROUTER_API_KEY` ke Streamlit Secrets atau environment variable."
@@ -283,25 +283,28 @@ def generate_peak_crisis_summary(df_peak_articles):
         )
         
         summary_col = "gemini_summary" if "gemini_summary" in df_peak_articles.columns else ("ai_summary" if "ai_summary" in df_peak_articles.columns else "domain")
-        combined_texts = " - ".join(df_peak_articles[summary_col].dropna().astype(str).tolist()[:10])
+        combined_texts = " - ".join(df_peak_articles[summary_col].dropna().astype(str).tolist()[:8])
         
-        # Prompt diperjelas agar outputnya ringkas dan tidak terlalu panjang
+        # Instruksi diperketat: Wajib hanya 2 poin agar muat dan tidak terpotong
         prompt = (
-            "Bertindaklah sebagai analis berita. Berdasarkan ringkasan berita negatif berikut, "
-            "buatkan analisis yang sangat ringkas dan padat (maksimal 3 poin utama saja) mengenai akar masalah "
-            "dan hal yang harus diwaspadai. Jangan terlalu panjang:\n\n" + combined_texts
+            "Bertindaklah sebagai analis PR. Berdasarkan ringkasan berita negatif berikut, "
+            "buatkan ringkasan super singkat yang HANYA TERDIRI DARI 2 POIN UTAMA saja "
+            "mengenai akar masalah dan peringatannya. Jangan buat teks yang panjang:\n\n" + combined_texts
         )
         
         response = client.chat.completions.create(
             model="microsoft/phi-4",
             messages=[
-                {"role": "system", "content": "Anda adalah asisten AI yang bertugas membuat ringkasan berita secara sangat ringkas, padat, dan tidak terpotong."},
+                {"role": "system", "content": "Anda adalah asisten AI yang membuat ringkasan berita sangat singkat, padat, wajib maksimal 2 poin, dan tidak boleh terpotong."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=300  # Batas token disesuaikan dengan teks yang lebih pendek
+            max_tokens=350
         )
         
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Gagal menghasilkan ringkasan AI: {str(e)}"
         return response.choices[0].message.content
     except Exception as e:
         return f"Gagal menghasilkan ringkasan AI: {str(e)}"
