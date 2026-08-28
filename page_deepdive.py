@@ -86,7 +86,14 @@ def render_deepdive_page(df_raw):
 
         st.markdown(f"<p style='font-weight:700; font-size:1rem; margin-bottom:4px; color:#1e293b;'>Article List & AI Summary for Topic: '{selected_single_topic}'</p>", unsafe_allow_html=True)
         
+        # --- TAMBAHAN SEARCH BAR DI SINI ---
         col_dt_title, col_dt_filter = st.columns([2, 1.2])
+        with col_dt_title:
+            search_keyword_deep = st.text_input(
+                "Cari berita topik ini (Domain/Ringkasan):", 
+                placeholder="Ketik kata kunci...", 
+                key="search_deepdive_topic"
+            )
         with col_dt_filter:
             tbl_sent_choice_deep = st.selectbox(
                 "Filter Sentiment for this Topic:",
@@ -98,6 +105,16 @@ def render_deepdive_page(df_raw):
         df_table_deep = df_deep.copy()
         if tbl_sent_choice_deep != "All Sentiments" and "sentiment" in df_table_deep.columns:
             df_table_deep = df_table_deep[df_table_deep["sentiment"] == tbl_sent_choice_deep]
+
+        # Logika Filter Search Bar
+        if search_keyword_deep:
+            keyword = search_keyword_deep.lower()
+            mask = False
+            for col in ["domain", "gemini_summary", "ai_summary", "news_title", "title"]:
+                if col in df_table_deep.columns:
+                    mask = mask | df_table_deep[col].astype(str).str.lower().str.contains(keyword, na=False)
+            df_table_deep = df_table_deep[mask]
+        # ------------------------------------
 
         summary_col_dp = "gemini_summary" if "gemini_summary" in df_table_deep.columns else ("ai_summary" if "ai_summary" in df_table_deep.columns else None)
         base_cols_dp = ["news_date", "domain", "new_tier", "sentiment"]
