@@ -37,7 +37,9 @@ with st.sidebar:
         with col_icon_1:
             st.image(icon_overview, width=22)
         with col_text_1:
-            if st.button("Sentiment Overview", key="nav_overview", use_container_width=True):
+            # Menggunakan format HTML di dalam label tombol agar ada teks utama dan sub-teks di bawahnya
+            btn_label_1 = "Sentiment Overview\n<span style='font-size:0.72rem; color:#64748b; font-weight:normal;'>Summary Dashboard</span>"
+            if st.button(btn_label_1, key="nav_overview", use_container_width=True):
                 st.session_state.active_page = "OVERVIEW"
                 st.rerun()
 
@@ -49,7 +51,8 @@ with st.sidebar:
         with col_icon_2:
             st.image(icon_alert, width=22)
         with col_text_2:
-            if st.button("Crisis Alert & Peak", key="nav_peak", use_container_width=True):
+            btn_label_2 = "Crisis Alert & Peak\n<span style='font-size:0.72rem; color:#64748b; font-weight:normal;'>Signal and Follow Up</span>"
+            if st.button(btn_label_2, key="nav_peak", use_container_width=True):
                 st.session_state.active_page = "PEAK_ALERT"
                 st.rerun()
 
@@ -61,7 +64,8 @@ with st.sidebar:
         with col_icon_3:
             st.image(icon_deep, width=22)
         with col_text_3:
-            if st.button("Topic Deep Dive", key="nav_deep", use_container_width=True):
+            btn_label_3 = "Topic Deep Dive\n<span style='font-size:0.72rem; color:#64748b; font-weight:normal;'>Explore Deep Insights</span>"
+            if st.button(btn_label_3, key="nav_deep", use_container_width=True):
                 st.session_state.active_page = "DEEP_DIVE"
                 st.rerun()
 
