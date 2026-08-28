@@ -37,6 +37,28 @@ def render_deepdive_page(df_raw):
     if selected_sent and "sentiment" in df_filtered.columns:
         df_filtered = df_filtered[df_filtered["sentiment"].isin(selected_sent)]
 
+    # Grafik Analisis Tambahan di Deep Dive
+    st.markdown("---")
+    g1, g2 = st.columns(2)
+    with g1:
+        st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Volume by Issue Topic</p>", unsafe_allow_html=True)
+        if not df_filtered.empty and "issue_topic" in df_filtered.columns:
+            df_topic_count = df_filtered["issue_topic"].value_counts().reset_index()
+            df_topic_count.columns = ['issue_topic', 'count']
+            fig_topic = px.bar(df_topic_count, x='count', y='issue_topic', orientation='h', text='count')
+            fig_topic = apply_clean_white_layout(fig_topic, height=300)
+            fig_topic.update_layout(yaxis_title="", xaxis_title="Number of Articles")
+            st.plotly_chart(fig_topic, use_container_width=True)
+            
+    with g2:
+        st.markdown("<p style='font-weight:700; font-size:1rem; margin-bottom:6px; color:#1e293b;'>Sentiment Breakdown by Tier</p>", unsafe_allow_html=True)
+        if not df_filtered.empty and "new_tier" in df_filtered.columns and "sentiment" in df_filtered.columns:
+            df_tier_sent = df_filtered.groupby(['new_tier', 'sentiment']).size().reset_index(name='count')
+            fig_tier_sent = px.bar(df_tier_sent, x='new_tier', y='count', color='sentiment', color_discrete_map=color_map_sentiment, barmode='stack')
+            fig_tier_sent = apply_clean_white_layout(fig_tier_sent, height=300)
+            fig_tier_sent.update_layout(xaxis_title="Media Tier", yaxis_title="Number of Articles")
+            st.plotly_chart(fig_tier_sent, use_container_width=True)
+
     st.markdown("---")
     st.markdown("<p style='font-weight:700; font-size:1.1rem; color:#1e293b;'>Detailed Article Explorer (Deep Dive Feed)</p>", unsafe_allow_html=True)
 
