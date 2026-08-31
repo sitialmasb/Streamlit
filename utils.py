@@ -1,7 +1,8 @@
+import base64
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-import os
 from openai import OpenAI
 
 def load_custom_css():
@@ -11,73 +12,109 @@ def load_custom_css():
             background-color: #fafbfc !important;
         }
         div.block-container {
-            padding-top: 1rem !important;
-            padding-bottom: 2rem !important;
+            padding-top: 0.8rem !important;
+            padding-bottom: 1.5rem !important;
         }
         [data-testid="stHeader"] {
             background: transparent !important;
-            height: 2rem !important;
-        }
-        [data-testid="stSidebar"] {
-            background-color: #ffffff !important;
-            border-right: 1px solid #e2e8f0 !important;
-        }
-        section[data-testid="stSidebar"] .block-container {
-            padding-top: 1.2rem !important;
-            padding-bottom: 1rem !important;
-        }
-        section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {
-            gap: 0.35rem !important;
+            height: 1.5rem !important;
         }
         html, body, p, span, h1, h2, h3, h4, h5, h6, label, small, strong, div {
             color: #1e293b !important;
         }
+        h2 { font-size: 1.35rem !important; }
+        
+        /* Label Widget */
         [data-testid="stWidgetLabel"] label, 
         [data-testid="stWidgetLabel"] p,
         .stSelectbox label, 
-        .stMultiSelect label,
-        .stRadio label {
+        .stMultiSelect label {
             color: #334155 !important;
+            font-weight: 600 !important;
+            font-size: 0.78rem !important;
+            margin-bottom: 2px !important;
+        }
+
+        /* ------------------------------------------------------------- */
+        /* OVERRIDE WARNA FILTERING (SELECTBOX & MULTISELECT) -> #237ece */
+        /* ------------------------------------------------------------- */
+        div[data-baseweb="select"] > div {
+            min-height: 36px !important;
+            border-radius: 6px !important;
+            font-size: 0.82rem !important;
+            border-color: #cbd5e1 !important;
+        }
+        div[data-baseweb="select"]:focus-within > div {
+            border-color: #237ece !important;
+            box-shadow: 0 0 0 1px #237ece !important;
+        }
+
+        div[data-baseweb="tag"] {
+            background-color: #f0f7ff !important;
+            border: 1px solid #237ece !important;
+            border-radius: 4px !important;
+        }
+        div[data-baseweb="tag"] span {
+            color: #237ece !important;
+            font-weight: 600 !important;
+            font-size: 0.75rem !important;
+        }
+        div[data-baseweb="tag"] svg {
+            fill: #237ece !important;
+        }
+
+        li[data-baseweb="menu-item"]:hover {
+            background-color: #f0f7ff !important;
+            color: #237ece !important;
+        }
+        li[data-baseweb="menu-item"][aria-selected="true"] {
+            background-color: #ebf4fc !important;
+            color: #237ece !important;
             font-weight: 700 !important;
-            font-size: 0.85rem !important;
         }
-        div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
-        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
-        div[data-baseweb="select"] > div,
-        div[role="combobox"] {
-            background-color: #ffffff !important;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 10px !important;
-            color: #1e293b !important;
+
+        input[type="text"] {
+            height: 36px !important;
+            font-size: 0.82rem !important;
+            border-radius: 6px !important;
         }
+        input[type="text"]:focus {
+            border-color: #237ece !important;
+            box-shadow: 0 0 0 1px #237ece !important;
+        }
+
+        /* ------------------------------------------------------------- */
+        /* METRIC CARDS                                                  */
+        /* ------------------------------------------------------------- */
         .metric-pill-card {
-            border-radius: 20px !important;
-            padding: 20px 22px;
-            min-height: 135px;
+            border-radius: 12px !important;
+            padding: 12px 14px !important;
+            min-height: 90px !important;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
             border: 1px solid #e2e8f0;
             transition: transform 0.15s ease-in-out;
         }
         .metric-pill-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
+
         .card-soft-white { background: #ffffff !important; border: 1px solid #e2e8f0 !important; }
-        .card-soft-white .pill-title { color: #0284c7 !important; }
+        .card-soft-white .pill-title { color: #237ece !important; }
         .card-soft-white .pill-value { color: #0f172a !important; }
-        .card-soft-white .pill-sub { color: #0369a1 !important; }
+        .card-soft-white .pill-sub { color: #237ece !important; }
 
         .card-soft-green { background: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; }
         .card-soft-green .pill-title { color: #166534 !important; }
         .card-soft-green .pill-value { color: #14532d !important; }
         .card-soft-green .pill-sub { color: #15803d !important; }
 
-        .card-soft-blue { background: #f0f7ff !important; border: 1px solid #bfdbfe !important; }
-        .card-soft-blue .pill-title { color: #1e40af !important; }
-        .card-soft-blue .pill-value { color: #1e3a8a !important; }
-        .card-soft-blue .pill-sub { color: #2563eb !important; }
+        .card-soft-blue { background: #f0f7ff !important; border: 1px solid #237ece !important; }
+        .card-soft-blue .pill-title { color: #237ece !important; }
+        .card-soft-blue .pill-value { color: #237ece !important; }
+        .card-soft-blue .pill-sub { color: #237ece !important; }
 
         .card-soft-orange { background: #fff7ed !important; border: 1px solid #fed7aa !important; }
         .card-soft-orange .pill-title { color: #9a3412 !important; }
@@ -89,9 +126,9 @@ def load_custom_css():
         .card-soft-slate .pill-value { color: #0f172a !important; }
         .card-soft-slate .pill-sub { color: #64748b !important; }
 
-        .pill-title { font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
-        .pill-value { font-size: 2.1rem; font-weight: 800; line-height: 1.1; margin: 4px 0; }
-        .pill-sub { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+        .pill-title { font-size: 0.68rem !important; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+        .pill-value { font-size: 1.45rem !important; font-weight: 800; line-height: 1.1; margin: 2px 0; }
+        .pill-sub { font-size: 0.65rem !important; font-weight: 600; text-transform: uppercase; }
 
         .alert-peak-card {
             background: #fff7ed;
@@ -102,46 +139,44 @@ def load_custom_css():
             border-radius: 12px;
             padding: 16px 20px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.04);
         }
-        div.capsule-rail-wrapper { margin-top: 28px !important; margin-bottom: 22px !important; }
+        div.capsule-rail-wrapper { margin-top: 16px !important; margin-bottom: 14px !important; }
         [data-testid="stDataFrame"] {
             background-color: #ffffff !important;
             border: 1px solid #e2e8f0 !important;
             border-radius: 12px !important;
             padding: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
-        section[data-testid="stSidebar"] div.stButton > button {
-            width: 100%;
-            text-align: left;
-            justify-content: flex-start;
-            border-radius: 12px;
-            padding: 10px 14px;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border: 1px solid transparent !important;
-            background-color: transparent !important;
-            color: #475569 !important;
-            box-shadow: none !important;
+
+        /* ------------------------------------------------------------- */
+        /* PRIMARY BUTTON & LOGIN SUBMIT BUTTON FONT WARNA PUTIH        */
+        /* ------------------------------------------------------------- */
+        button[kind="primary"],
+        div[data-testid="stFormSubmitButton"] button {
+            background-color: #237ece !important;
+            border-color: #237ece !important;
+            color: #ffffff !important;
         }
-        section[data-testid="stSidebar"] div.stButton > button:hover {
-            background-color: #f1f5f9 !important;
-            color: #0f172a !important;
-        }
-        section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {
-            background-color: #eff6ff !important;
-            color: #1d4ed8 !important;
-            border: 1px solid #dbeafe !important;
-            border-left: 5px solid #2563eb !important;
+        button[kind="primary"] p,
+        button[kind="primary"] span,
+        div[data-testid="stFormSubmitButton"] button p,
+        div[data-testid="stFormSubmitButton"] button span {
+            color: #ffffff !important;
             font-weight: 700 !important;
         }
-        section[data-testid="stSidebar"] div.stButton > button[kind="primary"] p {
-            color: #1d4ed8 !important;
+        button[kind="primary"]:hover,
+        div[data-testid="stFormSubmitButton"] button:hover {
+            background-color: #1d69ad !important;
+            border-color: #1d69ad !important;
         }
     </style>
     """, unsafe_allow_html=True)
+
+def get_base64_image(image_path):
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as f:
+            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+    return ""
 
 def standardize_sentiment_en(val):
     if pd.isna(val):
@@ -185,35 +220,52 @@ def load_local_dataset():
                 df["sentiment"] = df["sentiment"].apply(standardize_sentiment_en)
             if "news_date" in df.columns:
                 df["news_date"] = pd.to_datetime(df["news_date"], errors="coerce")
+            if "topic" not in df.columns and "issue_topic" in df.columns:
+                df["topic"] = df["issue_topic"]
+            if "subtopic" not in df.columns:
+                df["subtopic"] = "General"
+                
             return df, os.path.basename(file_found)
         except Exception as e:
             st.error(f"Failed to read file {file_found}: {e}")
             
-    # Fallback dummy dataset
     np.random.seed(42)
-    topics = ["integrity", "loyalty", "quality", "services_facility", "other"]
+    topic_structure = {
+        "Governance & Integrity": ["Anti-Corruption Compliance", "Leadership Ethics", "Regulatory Audits"],
+        "Operational Quality": ["Supply Chain Continuity", "Infrastructure Maintenance", "Safety Standards"],
+        "Customer & Service": ["Digital Platform Reliability", "Service Outages", "Billing Inquiries"],
+        "Environmental & Social": ["Carbon Reduction", "Community Relations", "Waste Management"]
+    }
+    
     domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com", "cnbcindonesia.com"]
     dates = pd.date_range(end="2026-08-25", periods=60, freq="D")
     
-    sample_data = pd.DataFrame({
-        "news_url": [f"https://{np.random.choice(domains)}/read/{1000+i}" for i in range(60)],
-        "sentiment": np.random.choice(["Positive", "Neutral", "Negative"], size=60, p=[0.45, 0.35, 0.2]),
-        "news_date": np.random.choice(dates, size=60),
-        "issue_topic": np.random.choice(topics, size=60),
-        "domain": np.random.choice(domains, size=60),
-        "new_tier": np.random.choice(["Tier 1", "Tier 2", "Tier 3"], size=60, p=[0.5, 0.3, 0.2]),
-        "gemini_summary": [
-            "AI Summary: Energy supplies and regional supply chain logistics remain stable and secure.",
-            "AI Summary: Price evaluations and strategic digital infrastructure mitigation ongoing.",
-            "AI Summary: Clean energy transition projects accelerating towards net zero goals.",
-            "AI Summary: Regular refinery maintenance scheduled to ensure highest operational safety standards."
-        ] * 15
-    })
+    rows = []
+    for i in range(80):
+        t = np.random.choice(list(topic_structure.keys()))
+        st_val = np.random.choice(topic_structure[t])
+        rows.append({
+            "news_url": f"https://{np.random.choice(domains)}/read/{1000+i}",
+            "sentiment": np.random.choice(["Positive", "Neutral", "Negative"], p=[0.45, 0.35, 0.2]),
+            "news_date": np.random.choice(dates),
+            "topic": t,
+            "subtopic": st_val,
+            "domain": np.random.choice(domains),
+            "new_tier": np.random.choice(["Tier 1", "Tier 2", "Tier 3"], p=[0.5, 0.3, 0.2]),
+            "gemini_summary": np.random.choice([
+                "AI Summary: Operational protocols audited and supply pipeline remains resilient.",
+                "AI Summary: Immediate mitigation conducted following digital platform maintenance issue.",
+                "AI Summary: Sustainability program accelerating towards emissions benchmark targets.",
+                "AI Summary: Corporate governance compliance verified by internal regulatory team."
+            ])
+        })
+        
+    sample_data = pd.DataFrame(rows)
     return sample_data, None
 
 color_map_sentiment = {
     'Positive': '#34d399',
-    'Neutral': '#60a5fa',
+    'Neutral': '#237ece',
     'Negative': '#fb923c'
 }
 
@@ -242,22 +294,21 @@ def analyze_negative_peak(df):
     peak_date = peak_row["news_date"]
     peak_count = peak_row["count"]
     df_peak_news = df_neg[df_neg["news_date"].dt.date == peak_date]
-    top_cause_topic = df_peak_news["issue_topic"].mode()[0] if "issue_topic" in df_peak_news.columns and not df_peak_news["issue_topic"].empty else "-"
+    
+    top_cause_topic = df_peak_news["topic"].mode()[0] if "topic" in df_peak_news.columns and not df_peak_news["topic"].empty else "-"
+    top_cause_subtopic = df_peak_news["subtopic"].mode()[0] if "subtopic" in df_peak_news.columns and not df_peak_news["subtopic"].empty else "-"
+    
     return {
         "peak_date": peak_date.strftime('%d %B %Y'),
         "peak_date_raw": peak_date,
         "peak_count": peak_count,
         "cause_topic": top_cause_topic,
+        "cause_subtopic": top_cause_subtopic,
         "peak_articles": df_peak_news,
         "daily_trend": df_neg_daily
     }
-from openai import OpenAI
 
 def generate_peak_crisis_summary(df_peak_articles):
-    """
-    Merangkum artikel negatif pada peak date menggunakan OpenRouter API.
-    Format output menggunakan tag HTML agar bersih tanpa nomor dan tanpa simbol bintang.
-    """
     if df_peak_articles.empty:
         return "Tidak ada data artikel yang cukup untuk diringkas."
     
@@ -281,17 +332,13 @@ def generate_peak_crisis_summary(df_peak_articles):
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1"
         )
-        
         summary_col = "gemini_summary" if "gemini_summary" in df_peak_articles.columns else ("ai_summary" if "ai_summary" in df_peak_articles.columns else "domain")
         combined_texts = " - ".join(df_peak_articles[summary_col].dropna().astype(str).tolist()[:8])
-        
-        # Instruksi diperketat agar menggunakan tag HTML <b> dan paragraf tanpa nomor
         prompt = (
             "Bertindaklah sebagai analis PR. Berdasarkan ringkasan berita negatif berikut, "
             "buatkan ringkasan super singkat dalam 2 paragraf terpisah tanpa nomor atau bullet point. "
             "Gunakan tag HTML <b>Akar Masalah:</b> di awal paragraf pertama dan <b>Peringatan:</b> di awal paragraf kedua:\n\n" + combined_texts
         )
-        
         response = client.chat.completions.create(
             model="microsoft/phi-4",
             messages=[
@@ -301,7 +348,44 @@ def generate_peak_crisis_summary(df_peak_articles):
             temperature=0.2,
             max_tokens=300
         )
-        
         return response.choices[0].message.content
     except Exception as e:
         return f"Gagal menghasilkan ringkasan AI: {str(e)}"
+
+def check_login():
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
+        st.session_state.user_role = None
+        st.session_state.username = None
+
+    if not st.session_state.logged_in:
+        col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
+        with col_l2:
+            st.markdown("""
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 20px;">
+                    <h2 style="font-weight: 800; color: #0f172a;">🔐 PORTAL LOGIN</h2>
+                    <p style="color: #64748b; font-size: 0.9rem;">TKB News Sentiment Dashboard</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            with st.form("login_form"):
+                username_input = st.text_input("Username", placeholder="admin / user")
+                password_input = st.text_input("Password", type="password", placeholder="admin123 / user123")
+                submitted = st.form_submit_button("Masuk ke Dashboard", use_container_width=True, type="primary")
+
+                if submitted:
+                    if username_input == "admin" and password_input == "admin123":
+                        st.session_state.logged_in = True
+                        st.session_state.user_role = "admin"
+                        st.session_state.username = "Administrator"
+                        st.session_state.active_page = "OVERVIEW"
+                        st.rerun()
+                    elif username_input == "user" and password_input == "user123":
+                        st.session_state.logged_in = True
+                        st.session_state.user_role = "viewer"
+                        st.session_state.username = "Viewer"
+                        st.session_state.active_page = "OVERVIEW"
+                        st.rerun()
+                    else:
+                        st.error("Username atau password salah.")
+        st.stop()
