@@ -8,14 +8,10 @@ from page_alert import render_alert_page
 from page_deepdive import render_deepdive_page
 from page_admin import render_admin_page
 
-
-# ==============================================================================
-# 1. AUTO-GENERATE LOCAL PNG ICONS
-# ==============================================================================
 def create_sample_icons():
     os.makedirs("assets/icons", exist_ok=True)
-    icon_color = (35, 126, 206, 255)       # HEX #237ece
-    accent_color = (35, 126, 206, 255)     # HEX #237ece
+    icon_color = (35, 126, 206, 255)
+    accent_color = (35, 126, 206, 255)
 
     icons_def = [
         ("icon_sentiment.png", "clock"),
@@ -26,48 +22,44 @@ def create_sample_icons():
 
     for filename, itype in icons_def:
         path = os.path.join("assets/icons", filename)
-        img = Image.new("RGBA", (80, 80), (255, 255, 255, 0))
-        draw = ImageDraw.Draw(img)
+        if not os.path.exists(path):
+            img = Image.new("RGBA", (80, 80), (255, 255, 255, 0))
+            draw = ImageDraw.Draw(img)
 
-        if itype == "clock":
-            draw.ellipse([14, 18, 66, 70], outline=icon_color, width=4)
-            draw.line([40, 44, 40, 28], fill=icon_color, width=4)
-            draw.line([40, 44, 52, 44], fill=icon_color, width=4)
-            draw.arc([8, 12, 28, 32], 120, 260, fill=icon_color, width=4)
-            draw.arc([52, 12, 72, 32], 280, 60, fill=icon_color, width=4)
-        elif itype == "alert_doc":
-            draw.rounded_rectangle([16, 14, 64, 68], radius=6, outline=icon_color, width=4)
-            draw.rounded_rectangle([28, 8, 52, 20], radius=4, outline=icon_color, width=3)
-            draw.polygon([(40, 28), (30, 46), (50, 46)], outline=accent_color, width=3)
-            draw.line([40, 36, 40, 40], fill=accent_color, width=3)
-            draw.point([40, 43], fill=accent_color)
-            draw.line([26, 54, 54, 54], fill=icon_color, width=3)
-            draw.line([26, 60, 44, 60], fill=icon_color, width=3)
-        elif itype == "newspaper":
-            draw.rounded_rectangle([16, 16, 64, 68], radius=8, outline=icon_color, width=4)
-            draw.ellipse([24, 24, 38, 38], outline=accent_color, width=3)
-            draw.line([44, 28, 56, 28], fill=icon_color, width=3)
-            draw.line([44, 36, 56, 36], fill=icon_color, width=3)
-            draw.line([24, 48, 56, 48], fill=icon_color, width=3)
-            draw.line([24, 56, 50, 56], fill=icon_color, width=3)
-        elif itype == "settings":
-            draw.ellipse([22, 22, 58, 58], outline=icon_color, width=4)
-            draw.ellipse([34, 34, 46, 46], fill=accent_color)
-            for angle in [0, 45, 90, 135, 180, 225, 270, 315]:
-                draw.rectangle([36, 12, 44, 20], fill=icon_color)
+            if itype == "clock":
+                draw.ellipse([14, 18, 66, 70], outline=icon_color, width=4)
+                draw.line([40, 44, 40, 28], fill=icon_color, width=4)
+                draw.line([40, 44, 52, 44], fill=icon_color, width=4)
+                draw.arc([8, 12, 28, 32], 120, 260, fill=icon_color, width=4)
+                draw.arc([52, 12, 72, 32], 280, 60, fill=icon_color, width=4)
+            elif itype == "alert_doc":
+                draw.rounded_rectangle([16, 14, 64, 68], radius=6, outline=icon_color, width=4)
+                draw.rounded_rectangle([28, 8, 52, 20], radius=4, outline=icon_color, width=3)
+                draw.polygon([(40, 28), (30, 46), (50, 46)], outline=accent_color, width=3)
+                draw.line([40, 36, 40, 40], fill=accent_color, width=3)
+                draw.point([40, 43], fill=accent_color)
+                draw.line([26, 54, 54, 54], fill=icon_color, width=3)
+                draw.line([26, 60, 44, 60], fill=icon_color, width=3)
+            elif itype == "newspaper":
+                draw.rounded_rectangle([16, 16, 64, 68], radius=8, outline=icon_color, width=4)
+                draw.ellipse([24, 24, 38, 38], outline=accent_color, width=3)
+                draw.line([44, 28, 56, 28], fill=icon_color, width=3)
+                draw.line([44, 36, 56, 36], fill=icon_color, width=3)
+                draw.line([24, 48, 56, 48], fill=icon_color, width=3)
+                draw.line([24, 56, 50, 56], fill=icon_color, width=3)
+            elif itype == "settings":
+                draw.ellipse([22, 22, 58, 58], outline=icon_color, width=4)
+                draw.ellipse([34, 34, 46, 46], fill=accent_color)
+                for angle in [0, 45, 90, 135, 180, 225, 270, 315]:
+                    draw.rectangle([36, 12, 44, 20], fill=icon_color)
 
-        img.save(path, "PNG")
-
+            img.save(path, "PNG")
 
 create_sample_icons()
 
-
-# ==============================================================================
-# 2. PAGE CONFIGURATION & LOGIN GUARD
-# ==============================================================================
 st.set_page_config(
     page_title="TKB NEWS SENTIMENT ANALYSIS",
-    page_icon="📡",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -80,19 +72,17 @@ if "active_page" not in st.session_state:
 
 df_raw, loaded_file_name = load_local_dataset()
 
-
-# ==============================================================================
-# 3. INJECT CSS MENU (ALIGN LEFT & CUSTOM HOVER)
-# ==============================================================================
+# -------------------------------------------------------------
+# CSS SIDEBAR MENU: STRICT ALIGN-LEFT & HOVER EFFECT
+# -------------------------------------------------------------
 icon_overview_b64 = get_base64_image("assets/icons/icon_sentiment.png")
 icon_alert_b64 = get_base64_image("assets/icons/icon_alert.png")
 icon_deepdive_b64 = get_base64_image("assets/icons/icon_deepdive.png")
 icon_admin_b64 = get_base64_image("assets/icons/icon_admin.png")
 
-st.markdown(
-    f"""
+st.markdown(f"""
 <style>
-    /* Sidebar Base */
+    /* Sidebar Layout */
     [data-testid="stSidebar"] {{
         background-color: #ffffff !important;
         border-right: 1px solid #edf2f7 !important;
@@ -104,10 +94,16 @@ st.markdown(
         padding-right: 0.5rem !important;
     }}
 
-    /* Menu Button Style: Align Left */
+    /* Container Tombol Sidebar Rata Kiri */
+    [data-testid="stSidebar"] div.stButton {{
+        display: flex !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+    }}
+
     [data-testid="stSidebar"] div.stButton > button {{
         width: 100% !important;
-        min-height: 38px !important;
+        min-height: 40px !important;
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
@@ -121,7 +117,19 @@ st.markdown(
         transition: all 0.15s ease-in-out !important;
     }}
 
-    /* Menu Text Alignment */
+    /* Inner Wrapper Streamlit Target */
+    [data-testid="stSidebar"] div.stButton > button > div,
+    [data-testid="stSidebar"] div.stButton > button [data-testid="stMarkdownContainer"] {{
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        width: 100% !important;
+        text-align: left !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }}
+
+    /* Text Style Rata Kiri */
     [data-testid="stSidebar"] div.stButton > button p,
     [data-testid="stSidebar"] div.stButton > button span {{
         margin: 0 !important;
@@ -131,6 +139,7 @@ st.markdown(
         color: #475569 !important;
         text-align: left !important;
         flex-grow: 1 !important;
+        display: block !important;
         transition: color 0.15s ease-in-out !important;
     }}
 
@@ -158,7 +167,7 @@ st.markdown(
         font-weight: 700 !important;
     }}
 
-    /* Auto-Inject PNG Icons */
+    /* PNG Icons Injection */
     div.st-key-btn_OVERVIEW button::before,
     div.st-key-btn_PEAK_ALERT button::before,
     div.st-key-btn_DEEP_DIVE button::before,
@@ -174,22 +183,14 @@ st.markdown(
         flex-shrink: 0;
     }}
 
-    div.st-key-btn_OVERVIEW button::before {{
-        background-image: url('{icon_overview_b64}');
-    }}
-    div.st-key-btn_PEAK_ALERT button::before {{
-        background-image: url('{icon_alert_b64}');
-    }}
-    div.st-key-btn_DEEP_DIVE button::before {{
-        background-image: url('{icon_deepdive_b64}');
-    }}
-    div.st-key-btn_ADMIN_SETTINGS button::before {{
-        background-image: url('{icon_admin_b64}');
-    }}
+    div.st-key-btn_OVERVIEW button::before {{ background-image: url('{icon_overview_b64}'); }}
+    div.st-key-btn_PEAK_ALERT button::before {{ background-image: url('{icon_alert_b64}'); }}
+    div.st-key-btn_DEEP_DIVE button::before {{ background-image: url('{icon_deepdive_b64}'); }}
+    div.st-key-btn_ADMIN_SETTINGS button::before {{ background-image: url('{icon_admin_b64}'); }}
 
-    /* Tombol Logout */
+    /* Logout Button */
     div.st-key-btn_logout button {{
-        min-height: 32px !important;
+        min-height: 34px !important;
         padding: 4px 10px !important;
         font-size: 0.8rem !important;
         justify-content: center !important;
@@ -198,34 +199,19 @@ st.markdown(
         background-color: #ffffff !important;
     }}
 </style>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
-
-# ==============================================================================
-# 4. SIDEBAR NAVIGATION MENU
-# ==============================================================================
+# -------------------------------------------------------------
+# SIDEBAR NAVIGATION
+# -------------------------------------------------------------
 MENU_ITEMS = [
-    {
-        "id": "OVERVIEW",
-        "title": "Sentiment Overview",
-    },
-    {
-        "id": "PEAK_ALERT",
-        "title": "Alert & Peak Spike",
-    },
-    {
-        "id": "DEEP_DIVE",
-        "title": "Topic Deep Dive",
-    },
+    {"id": "OVERVIEW", "title": "Sentiment Overview"},
+    {"id": "PEAK_ALERT", "title": "Alert & Peak Spike"},
+    {"id": "DEEP_DIVE", "title": "Topic Deep Dive"},
 ]
 
 if st.session_state.get("user_role") == "admin":
-    MENU_ITEMS.append({
-        "id": "ADMIN_SETTINGS",
-        "title": "Admin Settings",
-    })
+    MENU_ITEMS.append({"id": "ADMIN_SETTINGS", "title": "Admin Settings"})
 
 with st.sidebar:
     st.markdown(
@@ -262,21 +248,16 @@ with st.sidebar:
 
     st.markdown("---")
     if st.button("🚪 Logout", key="btn_logout", use_container_width=True):
-        # 1. Hapus state sesi
         st.session_state.logged_in = False
         st.session_state.user_role = None
         st.session_state.username = None
         st.session_state.active_page = "OVERVIEW"
-        
-        # 2. Hapus parameter URL browser
         st.query_params.clear()
-        
         st.rerun()
 
-
-# ==============================================================================
-# 5. ROUTER / PAGE RENDER LOGIC
-# ==============================================================================
+# -------------------------------------------------------------
+# PAGE ROUTER
+# -------------------------------------------------------------
 if st.session_state.active_page == "OVERVIEW":
     render_overview_page(df_raw)
 elif st.session_state.active_page == "PEAK_ALERT":
@@ -286,10 +267,6 @@ elif st.session_state.active_page == "DEEP_DIVE":
 elif st.session_state.active_page == "ADMIN_SETTINGS":
     render_admin_page(df_raw, loaded_file_name)
 
-
-# ==============================================================================
-# 6. FOOTER
-# ==============================================================================
 st.markdown("---")
 st.markdown(
     "<center style='color:#94a3b8; font-size:0.75rem; font-weight:600;'>TKB News Sentiment Analysis Dashboard © 2026</center>",
