@@ -5,13 +5,14 @@ from utils import analyze_negative_peak, apply_clean_white_layout, generate_peak
 def render_alert_page(df_raw):
     icon_alert_b64 = get_base64_image("assets/icons/icon_alert.png")
 
+    # Header dengan kotak latar dan ikon berwarna oranye (#ea580c)
     st.markdown(f"""
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-            <div style="background: #f0f7ff; border: 1px solid #237ece; padding: 6px; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                <img src="{icon_alert_b64}" width="20" height="20" style="object-fit: contain;" />
+            <div style="background: #fff7ed; border: 1px solid #fed7aa; padding: 6px; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                <img src="{icon_alert_b64}" width="20" height="20" style="object-fit: contain; filter: brightness(0) saturate(100%) invert(43%) sepia(87%) saturate(2225%) hue-rotate(359deg) brightness(97%) contrast(96%);" />
             </div>
             <div>
-                <h2 style="margin: 0; font-size: 1.3rem; color: #0f172a; font-weight:800;">CRISIS ALERT & <span style="color:#237ece; font-style: italic;">PEAK ANALYSIS</span></h2>
+                <h2 style="margin: 0; font-size: 1.3rem; color: #0f172a; font-weight:800;">CRISIS ALERT & <span style="color:#ea580c; font-style: italic;">PEAK ANALYSIS</span></h2>
                 <span style="font-size: 0.72rem; letter-spacing: 0.08em; color: #64748b; font-weight: 700;">NEGATIVE SENTIMENT SPIKES & ROOT CAUSE INVESTIGATION</span>
             </div>
         </div>
@@ -43,7 +44,7 @@ def render_alert_page(df_raw):
             
         with st.container():
             st.markdown(f"""
-                <div style="background: #f8fafc; border-left: 4px solid #237ece; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 0 6px 6px 0; color: #334155; font-size: 0.85rem; margin-bottom: 14px;">
+                <div style="background: #f8fafc; border-left: 4px solid #ea580c; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 0 6px 6px 0; color: #334155; font-size: 0.85rem; margin-bottom: 14px;">
                 {ai_summary_text}
                 </div>
             """, unsafe_allow_html=True)
