@@ -5,7 +5,6 @@ from utils import analyze_negative_peak, apply_clean_white_layout, generate_peak
 def render_alert_page(df_raw):
     icon_alert_b64 = get_base64_image("assets/icons/icon_alert.png")
 
-    # Header dengan kotak latar dan ikon berwarna oranye (#ea580c)
     st.markdown(f"""
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
             <div style="background: #fff7ed; border: 1px solid #fed7aa; padding: 6px; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
@@ -149,6 +148,5 @@ def render_alert_page(df_raw):
             col_cfg_peak[summary_col_pk] = st.column_config.TextColumn("Issue Summary (AI Summary)", width="large")
             
         st.dataframe(df_table_peak[cols_peak], column_config=col_cfg_peak, hide_index=True, use_container_width=True, height=300)
-
     else:
         st.info("No negative sentiment data or valid dates available.")
