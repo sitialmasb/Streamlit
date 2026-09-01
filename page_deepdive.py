@@ -6,9 +6,6 @@ from utils import color_map_sentiment, apply_clean_white_layout, get_base64_imag
 def render_deepdive_page(df_raw):
     icon_deepdive_b64 = get_base64_image("assets/icons/icon_deepdive.png")
     
-    # -------------------------------------------------------------
-    # 1. HEADER HALAMAN
-    # -------------------------------------------------------------
     st.markdown(f"""
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
             <div style="background: #f0f7ff; border: 1px solid #237ece; padding: 6px; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
@@ -28,11 +25,11 @@ def render_deepdive_page(df_raw):
         st.warning("Kolom `topic` tidak ditemukan di dalam dataset.")
         return
 
-    # Urutkan topik berdasarkan total artikel terbanyak ke terkecil
+    # Urutkan topik dari jumlah artikel terbanyak (Descending)
     available_topics = df_raw["topic"].dropna().astype(str).value_counts().index.tolist()
 
     # =============================================================
-    # TAMPILAN 1: GRID KARTU WIDGET TOPIK (SORTED BY TOTAL ARTICLES)
+    # TAMPILAN 1: GRID KARTU TOPIK (CLICKABLE CARD WIDGET)
     # =============================================================
     if st.session_state.selected_deepdive_topic is None:
         st.markdown("""
@@ -55,22 +52,18 @@ def render_deepdive_page(df_raw):
                     cursor: pointer !important;
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 }
-                
-                div[data-testid="stColumn"] div.stButton > button p,
-                div[data-testid="stColumn"] div.stButton > button div {
+                div[data-testid="stColumn"] div.stButton > button p {
                     text-align: left !important;
                     width: 100% !important;
                     color: #0f172a !important;
                     line-height: 1.4 !important;
                 }
-
                 div[data-testid="stColumn"] div.stButton > button:hover {
                     border-color: #237ece !important;
                     background-color: #f8fafc !important;
                     box-shadow: 0 8px 16px rgba(35, 126, 206, 0.12) !important;
                     transform: translateY(-3px) !important;
                 }
-                
                 div[data-testid="stColumn"] div.stButton > button:active {
                     transform: translateY(0) !important;
                 }
@@ -102,7 +95,6 @@ def render_deepdive_page(df_raw):
     else:
         selected_single_topic = st.session_state.selected_deepdive_topic
 
-        # Tombol kembali ke grid topik
         col_back, _ = st.columns([1.5, 4.5])
         with col_back:
             if st.button("← Back to All Topics", key="btn_back_to_topics", type="primary", use_container_width=True):
@@ -118,7 +110,6 @@ def render_deepdive_page(df_raw):
 
         st.markdown("---")
 
-        # Filter Subtopic & Tier
         df_deep = df_raw[df_raw["topic"] == selected_single_topic].copy()
         subtopics_in_topic = sorted(list(df_deep["subtopic"].dropna().astype(str).unique())) if "subtopic" in df_deep.columns else []
         tier_list_deep = sorted(list(df_raw["new_tier"].dropna().astype(str).unique())) if "new_tier" in df_raw.columns else []
@@ -134,7 +125,6 @@ def render_deepdive_page(df_raw):
         if selected_tier_deep and "new_tier" in df_deep.columns:
             df_deep = df_deep[df_deep["new_tier"].astype(str).isin(selected_tier_deep)]
 
-        # Metrik Topik
         deep_total = len(df_deep)
         deep_pos = len(df_deep[df_deep["sentiment"] == "Positive"]) if "sentiment" in df_deep.columns else 0
         deep_neu = len(df_deep[df_deep["sentiment"] == "Neutral"]) if "sentiment" in df_deep.columns else 0
@@ -176,7 +166,6 @@ def render_deepdive_page(df_raw):
 
         st.write("")
 
-        # Visualisasi Grafik
         col_g1, col_g2 = st.columns([1, 1.2])
         with col_g1:
             st.markdown(f"<p style='font-weight:700; font-size:0.88rem; margin-bottom:4px; color:#1e293b;'>Sentiment Proportion</p>", unsafe_allow_html=True)
@@ -195,23 +184,13 @@ def render_deepdive_page(df_raw):
                 fig_deep_sub.update_layout(xaxis_title="Articles Count", yaxis_title="")
                 st.plotly_chart(fig_deep_sub, use_container_width=True)
 
-        # Tabel Berita & AI Summary
         st.markdown(f"<p style='font-weight:700; font-size:0.88rem; margin-top:10px; margin-bottom:4px; color:#1e293b;'>Article List & AI Summary</p>", unsafe_allow_html=True)
         
         col_dt_title, col_dt_filter = st.columns([2, 1.2])
         with col_dt_title:
-            search_keyword_deep = st.text_input(
-                "Cari berita topik ini (Domain/Subtopic/Ringkasan):", 
-                placeholder="Ketik kata kunci...", 
-                key="search_deepdive_topic"
-            )
+            search_keyword_deep = st.text_input("Cari berita topik ini (Domain/Subtopic/Ringkasan):", placeholder="Ketik kata kunci...", key="search_deepdive_topic")
         with col_dt_filter:
-            tbl_sent_choice_deep = st.selectbox(
-                "Filter Sentiment:",
-                options=["All Sentiments", "Positive", "Neutral", "Negative"],
-                index=0,
-                key="tbl_sent_deep"
-            )
+            tbl_sent_choice_deep = st.selectbox("Filter Sentiment:", options=["All Sentiments", "Positive", "Neutral", "Negative"], index=0, key="tbl_sent_deep")
         
         df_table_deep = df_deep.copy()
         if tbl_sent_choice_deep != "All Sentiments" and "sentiment" in df_table_deep.columns:
