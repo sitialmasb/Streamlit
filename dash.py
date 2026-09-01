@@ -2,12 +2,16 @@ import base64
 import os
 from PIL import Image, ImageDraw
 import streamlit as st
-from utils import load_custom_css, load_local_dataset, check_login
+from utils import load_custom_css, load_local_dataset, check_login, get_base64_image
 from page_overview import render_overview_page
 from page_alert import render_alert_page
 from page_deepdive import render_deepdive_page
 from page_admin import render_admin_page
 
+
+# ==============================================================================
+# 1. AUTO-GENERATE LOCAL PNG ICONS
+# ==============================================================================
 def create_sample_icons():
     os.makedirs("assets/icons", exist_ok=True)
     icon_color = (35, 126, 206, 255)       # HEX #237ece
@@ -58,13 +62,9 @@ def create_sample_icons():
 create_sample_icons()
 
 
-def get_base64_image(image_path):
-    if os.path.exists(image_path):
-        with open(image_path, "rb") as f:
-            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
-    return ""
-
-
+# ==============================================================================
+# 2. PAGE CONFIGURATION & LOGIN GUARD
+# ==============================================================================
 st.set_page_config(
     page_title="TKB NEWS SENTIMENT ANALYSIS",
     page_icon="📡",
@@ -80,6 +80,10 @@ if "active_page" not in st.session_state:
 
 df_raw, loaded_file_name = load_local_dataset()
 
+
+# ==============================================================================
+# 3. INJECT CSS MENU (ALIGN LEFT & CUSTOM HOVER)
+# ==============================================================================
 icon_overview_b64 = get_base64_image("assets/icons/icon_sentiment.png")
 icon_alert_b64 = get_base64_image("assets/icons/icon_alert.png")
 icon_deepdive_b64 = get_base64_image("assets/icons/icon_deepdive.png")
@@ -88,6 +92,7 @@ icon_admin_b64 = get_base64_image("assets/icons/icon_admin.png")
 st.markdown(
     f"""
 <style>
+    /* Sidebar Base */
     [data-testid="stSidebar"] {{
         background-color: #ffffff !important;
         border-right: 1px solid #edf2f7 !important;
@@ -99,6 +104,7 @@ st.markdown(
         padding-right: 0.5rem !important;
     }}
 
+    /* Menu Button Style: Align Left */
     [data-testid="stSidebar"] div.stButton > button {{
         width: 100% !important;
         min-height: 38px !important;
@@ -106,7 +112,7 @@ st.markdown(
         flex-direction: row !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        padding: 6px 10px !important;
+        padding: 6px 12px !important;
         margin-bottom: 2px !important;
         border-radius: 6px !important;
         background-color: transparent !important;
@@ -115,35 +121,44 @@ st.markdown(
         transition: all 0.15s ease-in-out !important;
     }}
 
-    [data-testid="stSidebar"] div.stButton > button p {{
+    /* Menu Text Alignment */
+    [data-testid="stSidebar"] div.stButton > button p,
+    [data-testid="stSidebar"] div.stButton > button span {{
         margin: 0 !important;
         padding: 0 !important;
         font-size: 0.82rem !important;
         font-weight: 500 !important;
         color: #475569 !important;
+        text-align: left !important;
+        flex-grow: 1 !important;
         transition: color 0.15s ease-in-out !important;
     }}
 
+    /* Hover State */
     [data-testid="stSidebar"] div.stButton > button:hover {{
         background-color: #f0f7ff !important;
     }}
 
-    [data-testid="stSidebar"] div.stButton > button:hover p {{
+    [data-testid="stSidebar"] div.stButton > button:hover p,
+    [data-testid="stSidebar"] div.stButton > button:hover span {{
         color: #237ece !important;
         font-weight: 600 !important;
     }}
 
+    /* Active State */
     [data-testid="stSidebar"] div.stButton > button[kind="primary"] {{
         background-color: #f0f7ff !important;
         border-left: 3px solid #237ece !important;
         border-radius: 0 6px 6px 0 !important;
     }}
 
-    [data-testid="stSidebar"] div.stButton > button[kind="primary"] p {{
+    [data-testid="stSidebar"] div.stButton > button[kind="primary"] p,
+    [data-testid="stSidebar"] div.stButton > button[kind="primary"] span {{
         color: #237ece !important;
         font-weight: 700 !important;
     }}
 
+    /* Auto-Inject PNG Icons */
     div.st-key-btn_OVERVIEW button::before,
     div.st-key-btn_PEAK_ALERT button::before,
     div.st-key-btn_DEEP_DIVE button::before,
@@ -172,6 +187,7 @@ st.markdown(
         background-image: url('{icon_admin_b64}');
     }}
 
+    /* Tombol Logout */
     div.st-key-btn_logout button {{
         min-height: 32px !important;
         padding: 4px 10px !important;
@@ -186,6 +202,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
+# ==============================================================================
+# 4. SIDEBAR NAVIGATION MENU
+# ==============================================================================
 MENU_ITEMS = [
     {
         "id": "OVERVIEW",
@@ -242,12 +262,21 @@ with st.sidebar:
 
     st.markdown("---")
     if st.button("🚪 Logout", key="btn_logout", use_container_width=True):
+        # 1. Hapus state sesi
         st.session_state.logged_in = False
         st.session_state.user_role = None
         st.session_state.username = None
         st.session_state.active_page = "OVERVIEW"
+        
+        # 2. Hapus parameter URL browser
+        st.query_params.clear()
+        
         st.rerun()
 
+
+# ==============================================================================
+# 5. ROUTER / PAGE RENDER LOGIC
+# ==============================================================================
 if st.session_state.active_page == "OVERVIEW":
     render_overview_page(df_raw)
 elif st.session_state.active_page == "PEAK_ALERT":
@@ -257,6 +286,10 @@ elif st.session_state.active_page == "DEEP_DIVE":
 elif st.session_state.active_page == "ADMIN_SETTINGS":
     render_admin_page(df_raw, loaded_file_name)
 
+
+# ==============================================================================
+# 6. FOOTER
+# ==============================================================================
 st.markdown("---")
 st.markdown(
     "<center style='color:#94a3b8; font-size:0.75rem; font-weight:600;'>TKB News Sentiment Analysis Dashboard © 2026</center>",
