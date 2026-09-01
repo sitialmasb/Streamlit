@@ -2,14 +2,12 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 from utils import color_map_sentiment, apply_clean_white_layout, get_base64_image, analyze_negative_peak, generate_svg_bars
+
 def render_overview_page(df_raw):
     icon_overview_b64 = get_base64_image("assets/icons/icon_sentiment.png")
     
-    # -------------------------------------------------------------
-    # 1. HEADER HALAMAN
-    # -------------------------------------------------------------
     st.markdown(f"""
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
             <div style="background: #f0f7ff; border: 1px solid #237ece; padding: 6px; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                 <img src="{icon_overview_b64}" width="20" height="20" style="object-fit: contain;" />
             </div>
@@ -24,7 +22,7 @@ def render_overview_page(df_raw):
         st.session_state.overview_subtab = "DISTRIBUTION"
 
     # -------------------------------------------------------------
-    # 2. FILTERING (DATE RANGE & METADATA)
+    # FILTERING (DATE RANGE & METADATA)
     # -------------------------------------------------------------
     min_date = df_raw["news_date"].min().date() if "news_date" in df_raw.columns and not df_raw["news_date"].dropna().empty else None
     max_date = df_raw["news_date"].max().date() if "news_date" in df_raw.columns and not df_raw["news_date"].dropna().empty else None
@@ -90,7 +88,7 @@ def render_overview_page(df_raw):
         df_filtered = df_filtered[df_filtered["domain"].astype(str).isin(selected_domain)]
 
     # -------------------------------------------------------------
-    # 3. METRIK UTAMA (2 BARIS x 3 KOLOM)
+    # METRIK UTAMA
     # -------------------------------------------------------------
     total_news = len(df_filtered)
     pos_count = len(df_filtered[df_filtered["sentiment"] == "Positive"]) if "sentiment" in df_filtered.columns else 0
@@ -103,7 +101,7 @@ def render_overview_page(df_raw):
     peak_val_str = f"{peak_data_ov['peak_count']} News" if peak_data_ov and peak_data_ov['peak_count'] > 0 else "0 News"
     peak_cause_str = f"{peak_data_ov['cause_topic']}" if peak_data_ov and peak_data_ov['peak_count'] > 0 else "NORMAL"
 
-    # BARIS 1: TOTAL NEWS, TOP TOPIC, PEAK SPIKE
+    # BARIS 1
     r1_c1, r1_c2, r1_c3 = st.columns(3)
     with r1_c1:
         st.markdown(f"""
@@ -117,7 +115,7 @@ def render_overview_page(df_raw):
         st.markdown(f"""
             <div class="metric-pill-card card-soft-slate">
                 <div class="pill-title">TOP TOPIC</div>
-                <div class="pill-value" style="font-size:1.2rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{top_topic}">{top_topic}</div>
+                <div class="pill-value" style="font-size:1.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{top_topic}">{top_topic}</div>
                 <div class="pill-sub">LARGEST SHARE VOLUME</div>
             </div>
         """, unsafe_allow_html=True)
@@ -125,28 +123,14 @@ def render_overview_page(df_raw):
         st.markdown(f"""
             <div class="metric-pill-card card-soft-orange">
                 <div class="pill-title">🚨 PEAK SPIKE DATE</div>
-                <div class="pill-value" style="font-size:1.2rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{peak_date_str}">{peak_val_str}</div>
+                <div class="pill-value" style="font-size:1.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{peak_date_str}">{peak_val_str}</div>
                 <div class="pill-sub" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{peak_cause_str}">{peak_date_str} ({peak_cause_str})</div>
             </div>
         """, unsafe_allow_html=True)
 
-    st.write("")  # Spacing antar baris metrik
+    st.write("")
 
-# Hitung tren harian untuk mini sparkline bar chart
-    if "news_date" in df_filtered.columns and not df_filtered["news_date"].dropna().empty:
-        df_pos_trend = df_filtered[df_filtered["sentiment"] == "Positive"].groupby(df_filtered["news_date"].dt.date).size()
-        df_neu_trend = df_filtered[df_filtered["sentiment"] == "Neutral"].groupby(df_filtered["news_date"].dt.date).size()
-        df_neg_trend = df_filtered[df_filtered["sentiment"] == "Negative"].groupby(df_filtered["news_date"].dt.date).size()
-    else:
-        df_pos_trend = pd.Series([])
-        df_neu_trend = pd.Series([])
-        df_neg_trend = pd.Series([])
-
-    pos_pct = f"{(pos_count/total_news*100):.0f}%" if total_news else "0%"
-    neu_pct = f"{(neu_count/total_news*100):.0f}%" if total_news else "0%"
-    neg_pct = f"{(neg_count/total_news*100):.0f}%" if total_news else "0%"
-
-# Hitung tren harian untuk mini SVG sparkline
+    # BARIS 2 (SPARKLINE BAR)
     if "news_date" in df_filtered.columns and not df_filtered["news_date"].dropna().empty:
         df_pos_trend = df_filtered[df_filtered["sentiment"] == "Positive"].groupby(df_filtered["news_date"].dt.date).size()
         df_neu_trend = df_filtered[df_filtered["sentiment"] == "Neutral"].groupby(df_filtered["news_date"].dt.date).size()
@@ -164,12 +148,7 @@ def render_overview_page(df_raw):
     svg_neu = generate_svg_bars(df_neu_trend, "#237ece")
     svg_neg = generate_svg_bars(df_neg_trend, "#ea580c")
 
-    # -------------------------------------------------------------
-    # BARIS 2: POSITIVE, NEUTRAL, NEGATIVE (GRAFIK MENYATU DI DALAM KARTU)
-    # -------------------------------------------------------------
     r2_c1, r2_c2, r2_c3 = st.columns(3)
-
-    # 1. KARTU POSITIVE (HIJAU)
     with r2_c1:
         st.markdown(f"""
             <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15, 23, 42, 0.02);">
@@ -186,8 +165,6 @@ def render_overview_page(df_raw):
                 </div>
             </div>
         """, unsafe_allow_html=True)
-
-    # 2. KARTU NEUTRAL (BIRU)
     with r2_c2:
         st.markdown(f"""
             <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15, 23, 42, 0.02);">
@@ -204,8 +181,6 @@ def render_overview_page(df_raw):
                 </div>
             </div>
         """, unsafe_allow_html=True)
-
-    # 3. KARTU NEGATIVE (ORANYE)
     with r2_c3:
         st.markdown(f"""
             <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15, 23, 42, 0.02);">
@@ -222,8 +197,9 @@ def render_overview_page(df_raw):
                 </div>
             </div>
         """, unsafe_allow_html=True)
+
     # -------------------------------------------------------------
-    # 4. SUB-TAB KONTEN (DISTRIBUSI / BREAKDOWN / FEED)
+    # SUB-TAB KONTEN
     # -------------------------------------------------------------
     st.markdown('<div class="capsule-rail-wrapper">', unsafe_allow_html=True)
     p1, p2, p3 = st.columns(3)
