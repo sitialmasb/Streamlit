@@ -1,8 +1,7 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from utils import color_map_sentiment, apply_clean_white_layout, get_base64_image, analyze_negative_peak
-
+from utils import color_map_sentiment, apply_clean_white_layout, get_base64_image, analyze_negative_peak, generate_svg_bars
 def render_overview_page(df_raw):
     icon_overview_b64 = get_base64_image("assets/icons/icon_sentiment.png")
     
@@ -133,33 +132,96 @@ def render_overview_page(df_raw):
 
     st.write("")  # Spacing antar baris metrik
 
-    # BARIS 2: POSITIVE, NEUTRAL, NEGATIVE
+# Hitung tren harian untuk mini sparkline bar chart
+    if "news_date" in df_filtered.columns and not df_filtered["news_date"].dropna().empty:
+        df_pos_trend = df_filtered[df_filtered["sentiment"] == "Positive"].groupby(df_filtered["news_date"].dt.date).size()
+        df_neu_trend = df_filtered[df_filtered["sentiment"] == "Neutral"].groupby(df_filtered["news_date"].dt.date).size()
+        df_neg_trend = df_filtered[df_filtered["sentiment"] == "Negative"].groupby(df_filtered["news_date"].dt.date).size()
+    else:
+        df_pos_trend = pd.Series([])
+        df_neu_trend = pd.Series([])
+        df_neg_trend = pd.Series([])
+
+    pos_pct = f"{(pos_count/total_news*100):.0f}%" if total_news else "0%"
+    neu_pct = f"{(neu_count/total_news*100):.0f}%" if total_news else "0%"
+    neg_pct = f"{(neg_count/total_news*100):.0f}%" if total_news else "0%"
+
+# Hitung tren harian untuk mini SVG sparkline
+    if "news_date" in df_filtered.columns and not df_filtered["news_date"].dropna().empty:
+        df_pos_trend = df_filtered[df_filtered["sentiment"] == "Positive"].groupby(df_filtered["news_date"].dt.date).size()
+        df_neu_trend = df_filtered[df_filtered["sentiment"] == "Neutral"].groupby(df_filtered["news_date"].dt.date).size()
+        df_neg_trend = df_filtered[df_filtered["sentiment"] == "Negative"].groupby(df_filtered["news_date"].dt.date).size()
+    else:
+        df_pos_trend = pd.Series([])
+        df_neu_trend = pd.Series([])
+        df_neg_trend = pd.Series([])
+
+    pos_pct = f"{(pos_count/total_news*100):.0f}%" if total_news else "0%"
+    neu_pct = f"{(neu_count/total_news*100):.0f}%" if total_news else "0%"
+    neg_pct = f"{(neg_count/total_news*100):.0f}%" if total_news else "0%"
+
+    svg_pos = generate_svg_bars(df_pos_trend, "#16a34a")
+    svg_neu = generate_svg_bars(df_neu_trend, "#237ece")
+    svg_neg = generate_svg_bars(df_neg_trend, "#ea580c")
+
+    # -------------------------------------------------------------
+    # BARIS 2: POSITIVE, NEUTRAL, NEGATIVE (GRAFIK MENYATU DI DALAM KARTU)
+    # -------------------------------------------------------------
     r2_c1, r2_c2, r2_c3 = st.columns(3)
+
+    # 1. KARTU POSITIVE (HIJAU)
     with r2_c1:
         st.markdown(f"""
-            <div class="metric-pill-card card-soft-green">
-                <div class="pill-title">POSITIVE</div>
-                <div class="pill-value">{pos_count}</div>
-                <div class="pill-sub">{(pos_count/total_news*100) if total_news else 0:.1f}% OF TOTAL ARTICLES</div>
-            </div>
-        """, unsafe_allow_html=True)
-    with r2_c2:
-        st.markdown(f"""
-            <div class="metric-pill-card card-soft-blue">
-                <div class="pill-title">NEUTRAL</div>
-                <div class="pill-value">{neu_count}</div>
-                <div class="pill-sub">{(neu_count/total_news*100) if total_news else 0:.1f}% OF TOTAL ARTICLES</div>
-            </div>
-        """, unsafe_allow_html=True)
-    with r2_c3:
-        st.markdown(f"""
-            <div class="metric-pill-card card-soft-orange">
-                <div class="pill-title">NEGATIVE</div>
-                <div class="pill-value">{neg_count}</div>
-                <div class="pill-sub">{(neg_count/total_news*100) if total_news else 0:.1f}% MITIGATION REQUIRED</div>
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15, 23, 42, 0.02);">
+                <div style="display:flex; justify-content:flex-end; align-items:flex-end; flex-direction:column; margin-bottom:10px;">
+                    <span style="font-size:0.75rem; font-weight:700; color:#64748b; letter-spacing:0.02em; text-transform:uppercase;">POSITIVE</span>
+                    <span style="font-size:1.5rem; font-weight:800; color:#0f172a; line-height:1.1;">{pos_count}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>{svg_pos}</div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span style="border:1px solid #bbf7d0; color:#16a34a; background:#f0fdf4; width:18px; height:18px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:800;">↑</span>
+                        <span style="color:#16a34a; font-size:0.72rem; font-weight:700;">{pos_pct} (Share)</span>
+                    </div>
+                </div>
             </div>
         """, unsafe_allow_html=True)
 
+    # 2. KARTU NEUTRAL (BIRU)
+    with r2_c2:
+        st.markdown(f"""
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15, 23, 42, 0.02);">
+                <div style="display:flex; justify-content:flex-end; align-items:flex-end; flex-direction:column; margin-bottom:10px;">
+                    <span style="font-size:0.75rem; font-weight:700; color:#64748b; letter-spacing:0.02em; text-transform:uppercase;">NEUTRAL</span>
+                    <span style="font-size:1.5rem; font-weight:800; color:#0f172a; line-height:1.1;">{neu_count}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>{svg_neu}</div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span style="border:1px solid #bfdbfe; color:#237ece; background:#f0f7ff; width:18px; height:18px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:800;">↑</span>
+                        <span style="color:#237ece; font-size:0.72rem; font-weight:700;">{neu_pct} (Share)</span>
+                    </div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    # 3. KARTU NEGATIVE (ORANYE)
+    with r2_c3:
+        st.markdown(f"""
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15, 23, 42, 0.02);">
+                <div style="display:flex; justify-content:flex-end; align-items:flex-end; flex-direction:column; margin-bottom:10px;">
+                    <span style="font-size:0.75rem; font-weight:700; color:#64748b; letter-spacing:0.02em; text-transform:uppercase;">NEGATIVE</span>
+                    <span style="font-size:1.5rem; font-weight:800; color:#0f172a; line-height:1.1;">{neg_count}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>{svg_neg}</div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span style="border:1px solid #fed7aa; color:#ea580c; background:#fff7ed; width:18px; height:18px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:800;">↑</span>
+                        <span style="color:#ea580c; font-size:0.72rem; font-weight:700;">{neg_pct} (Share)</span>
+                    </div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
     # -------------------------------------------------------------
     # 4. SUB-TAB KONTEN (DISTRIBUSI / BREAKDOWN / FEED)
     # -------------------------------------------------------------
