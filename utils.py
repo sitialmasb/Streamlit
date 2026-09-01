@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from openai import OpenAI
+import plotly.graph_objects as go
 
 def load_custom_css():
     st.markdown("""
@@ -215,20 +216,30 @@ def load_local_dataset():
             else:
                 df = pd.read_excel(file_found)
             
+            # Normalisasi nama kolom menjadi huruf kecil & tanpa spasi ujung
             df.columns = [str(c).strip().lower() for c in df.columns]
+            
             if "sentiment" in df.columns:
                 df["sentiment"] = df["sentiment"].apply(standardize_sentiment_en)
             if "news_date" in df.columns:
                 df["news_date"] = pd.to_datetime(df["news_date"], errors="coerce")
-            if "topic" not in df.columns and "issue_topic" in df.columns:
-                df["topic"] = df["issue_topic"]
-            if "subtopic" not in df.columns:
+                
+            # Pastikan kolom topic & subtopic bertipe string dan bersih dari nilai NaN/kosong
+            if "topic" in df.columns:
+                df["topic"] = df["topic"].fillna("General").astype(str).str.strip()
+            else:
+                df["topic"] = "General"
+                
+            if "subtopic" in df.columns:
+                df["subtopic"] = df["subtopic"].fillna("General").astype(str).str.strip()
+            else:
                 df["subtopic"] = "General"
                 
             return df, os.path.basename(file_found)
         except Exception as e:
             st.error(f"Failed to read file {file_found}: {e}")
             
+    # Dummy sample fallback jika file tidak ditemukan
     np.random.seed(42)
     topic_structure = {
         "Governance & Integrity": ["Anti-Corruption Compliance", "Leadership Ethics", "Regulatory Audits"],
@@ -353,39 +364,115 @@ def generate_peak_crisis_summary(df_peak_articles):
         return f"Gagal menghasilkan ringkasan AI: {str(e)}"
 
 def check_login():
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-        st.session_state.user_role = None
-        st.session_state.username = None
+    """Mempertahankan sesi login saat browser di-refresh menggunakan query params."""
+    # 1. Cek apakah ada query param session di URL saat refresh
+    if not st.session_state.get("logged_in", False):
+        user_param = st.query_params.get("user")
+        role_param = st.query_params.get("role")
+        
+        # Jika query params valid ada di URL browser, pulihkan sesi otomatis
+        if user_param and role_param:
+            st.session_state.logged_in = True
+            st.session_state.username = user_param
+            st.session_state.user_role = role_param
 
-    if not st.session_state.logged_in:
-        col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
-        with col_l2:
-            st.markdown("""
-                <div style="text-align: center; margin-top: 50px; margin-bottom: 20px;">
-                    <h2 style="font-weight: 800; color: #0f172a;">🔐 PORTAL LOGIN</h2>
-                    <p style="color: #64748b; font-size: 0.9rem;">TKB News Sentiment Dashboard</p>
-                </div>
-            """, unsafe_allow_html=True)
-            
+    # 2. Jika belum login sama sekali, tampilkan form login
+    if not st.session_state.get("logged_in", False):
+        st.markdown("""
+            <div style="text-align:center; margin-top:40px; margin-bottom:20px;">
+                <h2 style="color:#0f172a; font-weight:800; margin-bottom:4px;">TKB NEWS SENTIMENT ANALYSIS</h2>
+                <span style="font-size:0.8rem; color:#64748b; font-weight:600;">Silakan login untuk mengakses dashboard</span>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        _, col_login, _ = st.columns([1, 1.2, 1])
+        with col_login:
             with st.form("login_form"):
-                username_input = st.text_input("Username", placeholder="admin / user")
-                password_input = st.text_input("Password", type="password", placeholder="admin123 / user123")
-                submitted = st.form_submit_button("Masuk ke Dashboard", use_container_width=True, type="primary")
+                username_input = st.text_input("Username")
+                password_input = st.text_input("Password", type="password")
+                submit_btn = st.form_submit_button("Masuk ke Dashboard", use_container_width=True)
 
-                if submitted:
+                if submit_btn:
+                    # Validasi Akun Admin
                     if username_input == "admin" and password_input == "admin123":
                         st.session_state.logged_in = True
+                        st.session_state.username = "Admin"
                         st.session_state.user_role = "admin"
-                        st.session_state.username = "Administrator"
-                        st.session_state.active_page = "OVERVIEW"
+                        # Simpan ke query param agar tahan refresh
+                        st.query_params["user"] = "Admin"
+                        st.query_params["role"] = "admin"
                         st.rerun()
+                    # Validasi Akun Viewer
                     elif username_input == "user" and password_input == "user123":
                         st.session_state.logged_in = True
-                        st.session_state.user_role = "viewer"
                         st.session_state.username = "Viewer"
-                        st.session_state.active_page = "OVERVIEW"
+                        st.session_state.user_role = "viewer"
+                        # Simpan ke query param agar tahan refresh
+                        st.query_params["user"] = "Viewer"
+                        st.query_params["role"] = "viewer"
                         st.rerun()
                     else:
                         st.error("Username atau password salah.")
-        st.stop()
+                        
+        st.stop()  # Hentikan render halaman lain jika belum login
+
+def generate_sparkline_bar_fig(daily_series, bar_color):
+    """Membuat mini bar chart yang jelas, tegas, dan fit di dalam card."""
+    fig = go.Figure()
+    
+    # Ambil 10 data poin terakhir agar batang tidak terlalu rapat
+    if daily_series is not None and not daily_series.empty:
+        vals = daily_series.tail(10).values.tolist()
+        if len(vals) < 10:
+            vals = [0] * (10 - len(vals)) + vals
+    else:
+        vals = [2, 5, 3, 6, 4, 7, 5, 8, 4, 6]
+        
+    x_vals = list(range(len(vals)))
+        
+    fig.add_trace(go.Bar(
+        x=x_vals,
+        y=vals,
+        marker=dict(
+            color=bar_color,
+            line=dict(width=0)
+        ),
+        hoverinfo='skip'
+    ))
+    
+    fig.update_layout(
+        height=36,
+        margin=dict(l=0, r=0, t=2, b=0),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(visible=False, fixedrange=True),
+        yaxis=dict(visible=False, fixedrange=True),
+        showlegend=False,
+        bargap=0.3
+    )
+    return fig
+
+def generate_svg_bars(series, bar_color):
+    """Menghasilkan SVG mini bar chart murni yang langsung embed di dalam kartu HTML."""
+    if series is not None and not series.empty:
+        vals = series.tail(10).values.tolist()
+        if len(vals) < 10:
+            vals = [0] * (10 - len(vals)) + vals
+    else:
+        vals = [2, 4, 3, 5, 2, 4, 6, 3, 5, 8]
+
+    max_v = max(vals) if max(vals) > 0 else 1
+    svg_height = 24
+    bar_width = 6
+    gap = 4
+    
+    rects = []
+    for i, v in enumerate(vals):
+        # Hitung tinggi bar proporsional (min 3px)
+        h = max(3, int((v / max_v) * svg_height))
+        y = svg_height - h
+        x = i * (bar_width + gap)
+        rects.append(f'<rect x="{x}" y="{y}" width="{bar_width}" height="{h}" rx="2" fill="{bar_color}" />')
+        
+    total_w = 10 * (bar_width + gap) - gap
+    return f'<svg width="{total_w}" height="{svg_height}" viewBox="0 0 {total_w} {svg_height}" style="display:block;">{"".join(rects)}</svg>'
