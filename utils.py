@@ -6,6 +6,13 @@ import numpy as np
 from openai import OpenAI
 import plotly.graph_objects as go
 
+# Color Palette Mappings
+color_map_sentiment = {
+    'Positive': '#16a34a',
+    'Neutral': '#237ece',
+    'Negative': '#ea580c'
+}
+
 def load_custom_css():
     st.markdown("""
     <style>
@@ -36,9 +43,7 @@ def load_custom_css():
             margin-bottom: 2px !important;
         }
 
-        /* ------------------------------------------------------------- */
-        /* OVERRIDE WARNA FILTERING (SELECTBOX & MULTISELECT) -> #237ece */
-        /* ------------------------------------------------------------- */
+        /* Override Select & Multiselect */
         div[data-baseweb="select"] > div {
             min-height: 36px !important;
             border-radius: 6px !important;
@@ -49,7 +54,6 @@ def load_custom_css():
             border-color: #237ece !important;
             box-shadow: 0 0 0 1px #237ece !important;
         }
-
         div[data-baseweb="tag"] {
             background-color: #f0f7ff !important;
             border: 1px solid #237ece !important;
@@ -63,7 +67,6 @@ def load_custom_css():
         div[data-baseweb="tag"] svg {
             fill: #237ece !important;
         }
-
         li[data-baseweb="menu-item"]:hover {
             background-color: #f0f7ff !important;
             color: #237ece !important;
@@ -73,7 +76,6 @@ def load_custom_css():
             color: #237ece !important;
             font-weight: 700 !important;
         }
-
         input[type="text"] {
             height: 36px !important;
             font-size: 0.82rem !important;
@@ -84,9 +86,7 @@ def load_custom_css():
             box-shadow: 0 0 0 1px #237ece !important;
         }
 
-        /* ------------------------------------------------------------- */
-        /* METRIC CARDS                                                  */
-        /* ------------------------------------------------------------- */
+        /* Metric Cards */
         .metric-pill-card {
             border-radius: 12px !important;
             padding: 12px 14px !important;
@@ -101,42 +101,22 @@ def load_custom_css():
         .metric-pill-card:hover {
             transform: translateY(-1px);
         }
-
         .card-soft-white { background: #ffffff !important; border: 1px solid #e2e8f0 !important; }
-        .card-soft-white .pill-title { color: #237ece !important; }
-        .card-soft-white .pill-value { color: #0f172a !important; }
-        .card-soft-white .pill-sub { color: #237ece !important; }
-
         .card-soft-green { background: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; }
-        .card-soft-green .pill-title { color: #166534 !important; }
-        .card-soft-green .pill-value { color: #14532d !important; }
-        .card-soft-green .pill-sub { color: #15803d !important; }
-
         .card-soft-blue { background: #f0f7ff !important; border: 1px solid #237ece !important; }
-        .card-soft-blue .pill-title { color: #237ece !important; }
-        .card-soft-blue .pill-value { color: #237ece !important; }
-        .card-soft-blue .pill-sub { color: #237ece !important; }
-
         .card-soft-orange { background: #fff7ed !important; border: 1px solid #fed7aa !important; }
-        .card-soft-orange .pill-title { color: #9a3412 !important; }
-        .card-soft-orange .pill-value { color: #7c2d12 !important; }
-        .card-soft-orange .pill-sub { color: #c2410c !important; }
-
         .card-soft-slate { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; }
-        .card-soft-slate .pill-title { color: #475569 !important; }
-        .card-soft-slate .pill-value { color: #0f172a !important; }
-        .card-soft-slate .pill-sub { color: #64748b !important; }
 
-        .pill-title { font-size: 0.68rem !important; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
-        .pill-value { font-size: 1.45rem !important; font-weight: 800; line-height: 1.1; margin: 2px 0; }
-        .pill-sub { font-size: 0.65rem !important; font-weight: 600; text-transform: uppercase; }
+        .pill-title { font-size: 0.68rem !important; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #64748b !important; }
+        .pill-value { font-size: 1.45rem !important; font-weight: 800; line-height: 1.1; margin: 2px 0; color: #0f172a !important; }
+        .pill-sub { font-size: 0.65rem !important; font-weight: 600; text-transform: uppercase; color: #94a3b8 !important; }
 
         .alert-peak-card {
             background: #fff7ed;
-            border-left: 5px solid #f97316;
-            border-top: 1px solid #ffedd5;
-            border-right: 1px solid #ffedd5;
-            border-bottom: 1px solid #ffedd5;
+            border-left: 5px solid #ea580c;
+            border-top: 1px solid #fed7aa;
+            border-right: 1px solid #fed7aa;
+            border-bottom: 1px solid #fed7aa;
             border-radius: 12px;
             padding: 16px 20px;
             margin-bottom: 16px;
@@ -149,26 +129,15 @@ def load_custom_css():
             padding: 6px;
         }
 
-        /* ------------------------------------------------------------- */
-        /* PRIMARY BUTTON & LOGIN SUBMIT BUTTON FONT WARNA PUTIH        */
-        /* ------------------------------------------------------------- */
-        button[kind="primary"],
-        div[data-testid="stFormSubmitButton"] button {
+        button[kind="primary"], div[data-testid="stFormSubmitButton"] button {
             background-color: #237ece !important;
             border-color: #237ece !important;
             color: #ffffff !important;
         }
-        button[kind="primary"] p,
-        button[kind="primary"] span,
-        div[data-testid="stFormSubmitButton"] button p,
-        div[data-testid="stFormSubmitButton"] button span {
+        button[kind="primary"] p, button[kind="primary"] span,
+        div[data-testid="stFormSubmitButton"] button p, div[data-testid="stFormSubmitButton"] button span {
             color: #ffffff !important;
             font-weight: 700 !important;
-        }
-        button[kind="primary"]:hover,
-        div[data-testid="stFormSubmitButton"] button:hover {
-            background-color: #1d69ad !important;
-            border-color: #1d69ad !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -181,15 +150,95 @@ def get_base64_image(image_path):
 
 def standardize_sentiment_en(val):
     if pd.isna(val):
-        return val
-    s = str(val).strip().lower()
-    if "pos" in s:
-        return "Positive"
-    elif "neg" in s:
-        return "Negative"
-    elif "neu" in s or "net" in s:
         return "Neutral"
-    return str(val).strip().capitalize()
+    s = str(val).strip().lower()
+    if any(k in s for k in ["pos", "baik", "positif"]):
+        return "Positive"
+    elif any(k in s for k in ["neg", "buruk", "negatif"]):
+        return "Negative"
+    return "Neutral"
+
+def apply_clean_white_layout(fig, height=280):
+    fig.update_layout(
+        height=height,
+        margin=dict(l=10, r=10, t=25, b=10),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#334155", size=11, family="sans-serif"),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    fig.update_xaxes(showgrid=True, gridcolor="#f1f5f9", zeroline=False)
+    fig.update_yaxes(showgrid=True, gridcolor="#f1f5f9", zeroline=False)
+    return fig
+
+def generate_svg_bars(series, bar_color):
+    """Menghasilkan SVG mini bar chart yang embed langsung di dalam kartu HTML."""
+    if series is not None and not series.empty:
+        vals = series.tail(10).values.tolist()
+        if len(vals) < 10:
+            vals = [0] * (10 - len(vals)) + vals
+    else:
+        vals = [2, 4, 3, 5, 2, 4, 6, 3, 5, 8]
+
+    max_v = max(vals) if max(vals) > 0 else 1
+    svg_height = 24
+    bar_width = 6
+    gap = 4
+    
+    rects = []
+    for i, v in enumerate(vals):
+        h = max(3, int((v / max_v) * svg_height))
+        y = svg_height - h
+        x = i * (bar_width + gap)
+        rects.append(f'<rect x="{x}" y="{y}" width="{bar_width}" height="{h}" rx="2" fill="{bar_color}" />')
+        
+    total_w = 10 * (bar_width + gap) - gap
+    return f'<svg width="{total_w}" height="{svg_height}" viewBox="0 0 {total_w} {svg_height}" style="display:block;">{"".join(rects)}</svg>'
+
+def check_login():
+    """Mempertahankan sesi login saat browser di-refresh via query params."""
+    if not st.session_state.get("logged_in", False):
+        user_param = st.query_params.get("user")
+        role_param = st.query_params.get("role")
+        
+        if user_param and role_param:
+            st.session_state.logged_in = True
+            st.session_state.username = user_param
+            st.session_state.user_role = role_param
+
+    if not st.session_state.get("logged_in", False):
+        st.markdown("""
+            <div style="text-align:center; margin-top:40px; margin-bottom:20px;">
+                <h2 style="color:#0f172a; font-weight:800; margin-bottom:4px;">TKB NEWS SENTIMENT ANALYSIS</h2>
+                <span style="font-size:0.8rem; color:#64748b; font-weight:600;">Silakan login untuk mengakses dashboard</span>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        _, col_login, _ = st.columns([1, 1.2, 1])
+        with col_login:
+            with st.form("login_form"):
+                username_input = st.text_input("Username")
+                password_input = st.text_input("Password", type="password")
+                submit_btn = st.form_submit_button("Masuk ke Dashboard", use_container_width=True)
+
+                if submit_btn:
+                    if username_input == "admin" and password_input == "admin123":
+                        st.session_state.logged_in = True
+                        st.session_state.username = "Admin"
+                        st.session_state.user_role = "admin"
+                        st.query_params["user"] = "Admin"
+                        st.query_params["role"] = "admin"
+                        st.rerun()
+                    elif username_input == "user" and password_input == "user123":
+                        st.session_state.logged_in = True
+                        st.session_state.username = "Viewer"
+                        st.session_state.user_role = "viewer"
+                        st.query_params["user"] = "Viewer"
+                        st.query_params["role"] = "viewer"
+                        st.rerun()
+                    else:
+                        st.error("Username atau password salah.")
+        st.stop()
 
 @st.cache_data
 def load_local_dataset():
@@ -216,7 +265,6 @@ def load_local_dataset():
             else:
                 df = pd.read_excel(file_found)
             
-            # Normalisasi nama kolom menjadi huruf kecil & tanpa spasi ujung
             df.columns = [str(c).strip().lower() for c in df.columns]
             
             if "sentiment" in df.columns:
@@ -224,7 +272,6 @@ def load_local_dataset():
             if "news_date" in df.columns:
                 df["news_date"] = pd.to_datetime(df["news_date"], errors="coerce")
                 
-            # Pastikan kolom topic & subtopic bertipe string dan bersih dari nilai NaN/kosong
             if "topic" in df.columns:
                 df["topic"] = df["topic"].fillna("General").astype(str).str.strip()
             else:
@@ -239,16 +286,13 @@ def load_local_dataset():
         except Exception as e:
             st.error(f"Failed to read file {file_found}: {e}")
             
-    # Dummy sample fallback jika file tidak ditemukan
     np.random.seed(42)
     topic_structure = {
-        "Governance & Integrity": ["Anti-Corruption Compliance", "Leadership Ethics", "Regulatory Audits"],
-        "Operational Quality": ["Supply Chain Continuity", "Infrastructure Maintenance", "Safety Standards"],
-        "Customer & Service": ["Digital Platform Reliability", "Service Outages", "Billing Inquiries"],
-        "Environmental & Social": ["Carbon Reduction", "Community Relations", "Waste Management"]
+        "Governance & Integrity": ["Anti-Corruption Compliance", "Leadership Ethics"],
+        "Operational Quality": ["Supply Chain Continuity", "Infrastructure Maintenance"],
+        "Customer & Service": ["Digital Platform Reliability", "Billing Inquiries"]
     }
-    
-    domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com", "cnbcindonesia.com"]
+    domains = ["kompas.com", "detik.com", "tempo.co", "bisnis.com"]
     dates = pd.date_range(end="2026-08-25", periods=60, freq="D")
     
     rows = []
@@ -263,35 +307,9 @@ def load_local_dataset():
             "subtopic": st_val,
             "domain": np.random.choice(domains),
             "new_tier": np.random.choice(["Tier 1", "Tier 2", "Tier 3"], p=[0.5, 0.3, 0.2]),
-            "gemini_summary": np.random.choice([
-                "AI Summary: Operational protocols audited and supply pipeline remains resilient.",
-                "AI Summary: Immediate mitigation conducted following digital platform maintenance issue.",
-                "AI Summary: Sustainability program accelerating towards emissions benchmark targets.",
-                "AI Summary: Corporate governance compliance verified by internal regulatory team."
-            ])
+            "gemini_summary": "AI Summary: Operational protocols audited and supply pipeline remains resilient."
         })
-        
-    sample_data = pd.DataFrame(rows)
-    return sample_data, None
-
-color_map_sentiment = {
-    'Positive': '#34d399',
-    'Neutral': '#237ece',
-    'Negative': '#fb923c'
-}
-
-def apply_clean_white_layout(fig, height=340):
-    fig.update_layout(
-        height=height,
-        margin=dict(l=20, r=20, t=30, b=20),
-        paper_bgcolor="#ffffff",
-        plot_bgcolor="#ffffff",
-        font=dict(color="#334155", size=11, family="Arial"),
-        xaxis=dict(showgrid=True, gridcolor="#f8fafc", linecolor="#e2e8f0", tickfont=dict(color="#475569", size=10)),
-        yaxis=dict(showgrid=True, gridcolor="#f8fafc", linecolor="#e2e8f0", tickfont=dict(color="#475569", size=10)),
-        legend=dict(bgcolor="rgba(255, 255, 255, 0.95)", bordercolor="#e2e8f0", borderwidth=1, font=dict(color="#334155"))
-    )
-    return fig
+    return pd.DataFrame(rows), None
 
 def analyze_negative_peak(df):
     if df.empty or "sentiment" not in df.columns or "news_date" not in df.columns:
@@ -362,117 +380,3 @@ def generate_peak_crisis_summary(df_peak_articles):
         return response.choices[0].message.content
     except Exception as e:
         return f"Gagal menghasilkan ringkasan AI: {str(e)}"
-
-def check_login():
-    """Mempertahankan sesi login saat browser di-refresh menggunakan query params."""
-    # 1. Cek apakah ada query param session di URL saat refresh
-    if not st.session_state.get("logged_in", False):
-        user_param = st.query_params.get("user")
-        role_param = st.query_params.get("role")
-        
-        # Jika query params valid ada di URL browser, pulihkan sesi otomatis
-        if user_param and role_param:
-            st.session_state.logged_in = True
-            st.session_state.username = user_param
-            st.session_state.user_role = role_param
-
-    # 2. Jika belum login sama sekali, tampilkan form login
-    if not st.session_state.get("logged_in", False):
-        st.markdown("""
-            <div style="text-align:center; margin-top:40px; margin-bottom:20px;">
-                <h2 style="color:#0f172a; font-weight:800; margin-bottom:4px;">TKB NEWS SENTIMENT ANALYSIS</h2>
-                <span style="font-size:0.8rem; color:#64748b; font-weight:600;">Silakan login untuk mengakses dashboard</span>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        _, col_login, _ = st.columns([1, 1.2, 1])
-        with col_login:
-            with st.form("login_form"):
-                username_input = st.text_input("Username")
-                password_input = st.text_input("Password", type="password")
-                submit_btn = st.form_submit_button("Masuk ke Dashboard", use_container_width=True)
-
-                if submit_btn:
-                    # Validasi Akun Admin
-                    if username_input == "admin" and password_input == "admin123":
-                        st.session_state.logged_in = True
-                        st.session_state.username = "Admin"
-                        st.session_state.user_role = "admin"
-                        # Simpan ke query param agar tahan refresh
-                        st.query_params["user"] = "Admin"
-                        st.query_params["role"] = "admin"
-                        st.rerun()
-                    # Validasi Akun Viewer
-                    elif username_input == "user" and password_input == "user123":
-                        st.session_state.logged_in = True
-                        st.session_state.username = "Viewer"
-                        st.session_state.user_role = "viewer"
-                        # Simpan ke query param agar tahan refresh
-                        st.query_params["user"] = "Viewer"
-                        st.query_params["role"] = "viewer"
-                        st.rerun()
-                    else:
-                        st.error("Username atau password salah.")
-                        
-        st.stop()  # Hentikan render halaman lain jika belum login
-
-def generate_sparkline_bar_fig(daily_series, bar_color):
-    """Membuat mini bar chart yang jelas, tegas, dan fit di dalam card."""
-    fig = go.Figure()
-    
-    # Ambil 10 data poin terakhir agar batang tidak terlalu rapat
-    if daily_series is not None and not daily_series.empty:
-        vals = daily_series.tail(10).values.tolist()
-        if len(vals) < 10:
-            vals = [0] * (10 - len(vals)) + vals
-    else:
-        vals = [2, 5, 3, 6, 4, 7, 5, 8, 4, 6]
-        
-    x_vals = list(range(len(vals)))
-        
-    fig.add_trace(go.Bar(
-        x=x_vals,
-        y=vals,
-        marker=dict(
-            color=bar_color,
-            line=dict(width=0)
-        ),
-        hoverinfo='skip'
-    ))
-    
-    fig.update_layout(
-        height=36,
-        margin=dict(l=0, r=0, t=2, b=0),
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        xaxis=dict(visible=False, fixedrange=True),
-        yaxis=dict(visible=False, fixedrange=True),
-        showlegend=False,
-        bargap=0.3
-    )
-    return fig
-
-def generate_svg_bars(series, bar_color):
-    """Menghasilkan SVG mini bar chart murni yang langsung embed di dalam kartu HTML."""
-    if series is not None and not series.empty:
-        vals = series.tail(10).values.tolist()
-        if len(vals) < 10:
-            vals = [0] * (10 - len(vals)) + vals
-    else:
-        vals = [2, 4, 3, 5, 2, 4, 6, 3, 5, 8]
-
-    max_v = max(vals) if max(vals) > 0 else 1
-    svg_height = 24
-    bar_width = 6
-    gap = 4
-    
-    rects = []
-    for i, v in enumerate(vals):
-        # Hitung tinggi bar proporsional (min 3px)
-        h = max(3, int((v / max_v) * svg_height))
-        y = svg_height - h
-        x = i * (bar_width + gap)
-        rects.append(f'<rect x="{x}" y="{y}" width="{bar_width}" height="{h}" rx="2" fill="{bar_color}" />')
-        
-    total_w = 10 * (bar_width + gap) - gap
-    return f'<svg width="{total_w}" height="{svg_height}" viewBox="0 0 {total_w} {svg_height}" style="display:block;">{"".join(rects)}</svg>'
